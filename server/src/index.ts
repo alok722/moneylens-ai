@@ -80,4 +80,10 @@ async function bootstrap() {
   }
 }
 
-bootstrap();
+// Only run bootstrap if this file is executed directly (not imported for testing)
+if (require.main === module) {
+  bootstrap();
+}
+
+// Export app for testing
+export default app;

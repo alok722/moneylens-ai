@@ -1,5 +1,5 @@
 import { Router, Request, Response } from "express";
-import { RecurringExpense } from "../models";
+import { recurringExpenseService } from "../services";
 import { logger } from "../config/logger";
 
 const router = Router();
@@ -13,15 +13,15 @@ router.get("/", async (req: Request, res: Response) => {
   }
 
   try {
-    const userRecurring = await RecurringExpense.find({ userId }).sort({ createdAt: -1 });
-    res.json(userRecurring);
+    const recurring = await recurringExpenseService.getRecurringExpenses(userId);
+    res.json(recurring);
   } catch (error) {
     logger.error("Error fetching recurring expenses:", error);
     res.status(500).json({ error: "Failed to fetch recurring expenses" });
   }
 });
 
-// Create recurring expense template
+// Create recurring expense
 router.post("/", async (req: Request, res: Response) => {
   const { userId, category, amount, note, tag } = req.body;
   if (!userId || !category || amount === undefined) {
@@ -32,14 +32,13 @@ router.post("/", async (req: Request, res: Response) => {
   }
 
   try {
-    const newRecurring = await RecurringExpense.create({
+    const newRecurring = await recurringExpenseService.createRecurringExpense(
       userId,
       category,
-      amount: Number(amount),
-      note: note || "",
-      tag: tag || "neutral",
-    });
-
+      amount,
+      note,
+      tag
+    );
     res.status(201).json(newRecurring);
   } catch (error) {
     logger.error("Error creating recurring expense:", error);
@@ -47,51 +46,43 @@ router.post("/", async (req: Request, res: Response) => {
   }
 });
 
-// Update recurring expense template
+// Update recurring expense
 router.put("/:id", async (req: Request, res: Response) => {
   const { id } = req.params;
   const { category, amount, note, tag } = req.body;
 
   try {
-    const updated = await RecurringExpense.findByIdAndUpdate(
-      id,
-      {
-        ...(category !== undefined && { category }),
-        ...(amount !== undefined && { amount: Number(amount) }),
-        ...(note !== undefined && { note }),
-        ...(tag !== undefined && { tag }),
-      },
-      { new: true }
-    );
-
-    if (!updated) {
-      res.status(404).json({ error: "Recurring expense not found" });
-      return;
-    }
-
+    const updated = await recurringExpenseService.updateRecurringExpense(id, {
+      category,
+      amount,
+      note,
+      tag,
+    });
     res.json(updated);
-  } catch (error) {
-    logger.error("Error updating recurring expense:", error);
-    res.status(500).json({ error: "Failed to update recurring expense" });
+  } catch (error: any) {
+    if (error.message === "RECURRING_NOT_FOUND") {
+      res.status(404).json({ error: "Recurring expense not found" });
+    } else {
+      logger.error("Error updating recurring expense:", error);
+      res.status(500).json({ error: "Failed to update recurring expense" });
+    }
   }
 });
 
-// Delete recurring expense template
+// Delete recurring expense
 router.delete("/:id", async (req: Request, res: Response) => {
   const { id } = req.params;
 
   try {
-    const deleted = await RecurringExpense.findByIdAndDelete(id);
-
-    if (!deleted) {
+    const result = await recurringExpenseService.deleteRecurringExpense(id);
+    res.json(result);
+  } catch (error: any) {
+    if (error.message === "RECURRING_NOT_FOUND") {
       res.status(404).json({ error: "Recurring expense not found" });
-      return;
+    } else {
+      logger.error("Error deleting recurring expense:", error);
+      res.status(500).json({ error: "Failed to delete recurring expense" });
     }
-
-    res.json({ success: true });
-  } catch (error) {
-    logger.error("Error deleting recurring expense:", error);
-    res.status(500).json({ error: "Failed to delete recurring expense" });
   }
 });
 
