@@ -1,1 +1,14 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+echo "🔍 Running pre-commit checks..."
+
+# Run lint-staged for linting
+echo "📝 Linting staged files..."
 npx lint-staged
+
+# Run server tests
+echo "🧪 Running server tests..."
+cd server && yarn test:e2e
+
+echo "✅ All pre-commit checks passed!"

@@ -14,6 +14,8 @@
     "start": "yarn workspace server start",
     "lint": "yarn workspace client lint && yarn workspace server lint",
     "lint:fix": "yarn workspace client lint --fix && yarn workspace server lint:fix",
+    "test": "yarn workspace server test",
+    "test:e2e": "yarn workspace server test:e2e",
     "prepare": "husky"
   },
   "lint-staged": {
