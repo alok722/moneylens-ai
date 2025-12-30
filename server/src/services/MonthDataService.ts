@@ -8,6 +8,7 @@ import {
 import { generateId } from "../utils/idGenerator";
 import { recalculateMonthTotals } from "../utils/monthCalculations";
 import { logger } from "../config/logger";
+import { recurringExpenseService } from "./RecurringExpenseService";
 
 const MONTH_NAMES = [
   "January",
@@ -99,6 +100,29 @@ export class MonthDataService {
       });
     }
 
+    // Fetch recurring expenses and add them to the new month
+    const recurringExpenses = await recurringExpenseService.getRecurringExpenses(userId);
+    const expenses: IExpenseItem[] = [];
+
+    for (const recurring of recurringExpenses) {
+      const expenseEntry: IExpenseEntry = {
+        id: generateId("entry"),
+        amount: recurring.amount,
+        note: recurring.note || "",
+        tag: recurring.tag || "neutral",
+      };
+
+      const expenseItem: IExpenseItem = {
+        id: generateId("exp"),
+        category: recurring.category,
+        amount: recurring.amount,
+        comment: `${recurring.amount}(${recurring.note || "Recurring expense"})`,
+        entries: [expenseEntry],
+      };
+
+      expenses.push(expenseItem);
+    }
+
     // Create new month
     const newMonth = await MonthData.create({
       userId,
@@ -106,13 +130,19 @@ export class MonthDataService {
       year,
       month,
       income,
-      expenses: [],
-      totalIncome: carryForwardAmount,
-      totalExpense: 0,
-      carryForward: carryForwardAmount,
+      expenses,
+      totalIncome: 0, // Will be recalculated
+      totalExpense: 0, // Will be recalculated
+      carryForward: 0, // Will be recalculated
     });
 
-    logger.info(`New month created: ${newMonth.monthName} for user ${userId}`);
+    // Recalculate totals to ensure accuracy
+    recalculateMonthTotals(newMonth);
+    await newMonth.save();
+
+    logger.info(
+      `New month created: ${newMonth.monthName} for user ${userId} with ${recurringExpenses.length} recurring expenses`
+    );
 
     return newMonth;
   }

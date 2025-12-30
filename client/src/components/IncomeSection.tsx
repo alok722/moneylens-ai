@@ -1,17 +1,18 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { IncomeItem } from "@/types";
 import { useApp } from "@/context/AppContext";
+import { useTableControls } from "@/hooks/useTableControls";
+import { useDialogState } from "@/hooks/useDialogState";
+import { useFormState } from "@/hooks/useFormState";
+import { useTransactionForm } from "@/hooks/useTransactionForm";
 import { formatCurrency } from "@/utils/calculations";
+import { INCOME_CATEGORIES } from "@/constants/categories";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { CategorySelect } from "@/components/shared/CategorySelect";
+import { SortableHeader } from "@/components/shared/SortableHeader";
+import { TableControls } from "@/components/shared/TableControls";
 import {
   Table,
   TableBody,
@@ -31,15 +32,7 @@ import {
 } from "@/components/ui/dialog";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { toast } from "sonner";
-import {
-  Plus,
-  Trash2,
-  Search,
-  ArrowUpDown,
-  ArrowUp,
-  ArrowDown,
-  X,
-} from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import { CategoryIcon } from "@/components/Tables/CategoryIcon";
 import { BreakdownTooltip } from "@/components/Tables/BreakdownTooltip";
 
@@ -55,24 +48,22 @@ interface IncomeFormData {
   note: string;
 }
 
-const INCOME_CATEGORIES = [
-  "Salary",
-  "Carry Forward",
-  "Bonus",
-  "Freelance",
-  "Investment Returns",
-  "Rental Income",
-  "Others",
-];
-
 export function IncomeSection({
   monthId,
   income,
   totalIncome,
 }: IncomeSectionProps) {
   const { addIncomeEntry, deleteIncome, editIncomeEntry, deleteIncomeEntry, currency } = useApp();
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [formData, setFormData] = useState<IncomeFormData>({
+  
+  // Dialog state
+  const { isOpen: isAddDialogOpen, openDialog, closeDialog, setIsOpen: setIsAddDialogOpen } = useDialogState();
+  
+  // Form state
+  const {
+    formData,
+    setFormData,
+    resetForm,
+  } = useFormState<IncomeFormData>({
     category: "",
     amount: "",
     note: "",
@@ -83,11 +74,6 @@ export function IncomeSection({
     open: boolean;
     item: IncomeItem | null;
   }>({ open: false, item: null });
-
-  // Search and sort state
-  const [searchQuery, setSearchQuery] = useState("");
-  const [sortBy, setSortBy] = useState<"category" | "amount" | null>(null);
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
   // Group income by category (similar to expenses)
   const groupedIncome = (income || []).reduce((acc, item) => {
@@ -129,102 +115,36 @@ export function IncomeSection({
   const displayIncome = groupedIncome.filter(
     (item) => item.amount > 0 || (item.entries && item.entries.length > 0)
   );
+  
+  // Use table controls hook
+  const {
+    searchQuery,
+    setSearchQuery,
+    sortBy,
+    sortOrder,
+    handleSort,
+    clearFilters,
+    processedData,
+    hasActiveFilters,
+  } = useTableControls({
+    data: displayIncome,
+    searchFields: ["category", "entries"],
+  });
 
-  // Filter and sort income
-  const processedIncome = useMemo(() => {
-    let filtered = displayIncome;
-
-    // Apply search filter
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(
-        (item) =>
-          item.category.toLowerCase().includes(query) ||
-          item.entries?.some((e: { note: string }) =>
-            e.note.toLowerCase().includes(query)
-          )
-      );
+  // Transaction form hook
+  const { validateAndSubmit } = useTransactionForm(
+    async (data) => {
+      await addIncomeEntry(monthId, data.category, data.amount, data.note);
+    },
+    () => {
+      resetForm();
+      closeDialog();
+      toast.success("Income added successfully");
     }
-
-    // Apply sorting
-    if (sortBy) {
-      filtered = [...filtered].sort((a, b) => {
-        let compareValue = 0;
-        if (sortBy === "category") {
-          compareValue = a.category.localeCompare(b.category);
-        } else if (sortBy === "amount") {
-          compareValue = a.amount - b.amount;
-        }
-        return sortOrder === "asc" ? compareValue : -compareValue;
-      });
-    }
-
-    return filtered;
-  }, [displayIncome, searchQuery, sortBy, sortOrder]);
-
-  const handleSort = (column: "category" | "amount") => {
-    if (sortBy === column) {
-      if (sortOrder === "asc") {
-        setSortOrder("desc");
-      } else {
-        setSortBy(null);
-        setSortOrder("asc");
-      }
-    } else {
-      setSortBy(column);
-      setSortOrder("asc");
-    }
-  };
-
-  const getSortIcon = (column: "category" | "amount") => {
-    if (sortBy !== column)
-      return <ArrowUpDown className="w-3.5 h-3.5 ml-1 opacity-50" />;
-    return sortOrder === "asc" ? (
-      <ArrowUp className="w-3.5 h-3.5 ml-1" />
-    ) : (
-      <ArrowDown className="w-3.5 h-3.5 ml-1" />
-    );
-  };
-
-  const clearFilters = () => {
-    setSearchQuery("");
-    setSortBy(null);
-    setSortOrder("asc");
-  };
-
-  const hasActiveFilters = searchQuery.trim() || sortBy;
+  );
 
   const handleAddIncome = async () => {
-    if (!formData.category.trim()) {
-      alert("Please select a category");
-      return;
-    }
-
-    const amount = parseFloat(formData.amount);
-    if (isNaN(amount) || amount <= 0) {
-      toast.error("Please enter a valid amount greater than 0");
-      return;
-    }
-
-    if (!formData.note.trim()) {
-      toast.error("Please enter a note");
-      return;
-    }
-
-    try {
-      await addIncomeEntry(
-        monthId,
-        formData.category.trim(),
-        amount,
-        formData.note.trim()
-      );
-      setFormData({ category: "", amount: "", note: "" });
-      setIsAddDialogOpen(false);
-      toast.success("Income added successfully");
-    } catch (error) {
-      console.error("Failed to add income:", error);
-      toast.error("Failed to add income. Please try again.");
-    }
+    await validateAndSubmit(formData);
   };
 
   const handleDeleteCategory = async (item: IncomeItem) => {
@@ -238,51 +158,28 @@ export function IncomeSection({
     }
   };
 
-  const formatBreakdown = (entries: any[] | undefined): string => {
-    if (!entries || entries.length === 0) return "";
-
-    return entries
-      .map((entry) => `${entry.amount}(${entry.note || "No note"})`)
-      .join(" + ");
-  };
-
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-4">
         <h3 className="text-lg font-semibold text-white">Income</h3>
-        <div className="flex items-center gap-2">
-          {hasActiveFilters && (
-            <Button
-              onClick={clearFilters}
-              variant="ghost"
-              size="sm"
-              className="text-slate-400 hover:text-white hover:bg-slate-700/50 h-9"
-            >
-              <X className="w-4 h-4 mr-1" />
-              Clear Filters
-            </Button>
-          )}
-          <Button
-            onClick={() => setIsAddDialogOpen(true)}
-            size="sm"
-            className="bg-emerald-500 hover:bg-emerald-600 shadow-lg shadow-emerald-500/20 transition-all duration-200 hover:shadow-emerald-500/30"
-          >
-            <Plus className="w-4 h-4 mr-1" />
-            Add Income
-          </Button>
-        </div>
+        <Button
+          onClick={openDialog}
+          size="sm"
+          className="bg-emerald-500 hover:bg-emerald-600 shadow-lg shadow-emerald-500/20 transition-all duration-200 hover:shadow-emerald-500/30"
+        >
+          <Plus className="w-4 h-4 mr-1" />
+          Add Income
+        </Button>
       </div>
 
       {/* Search Bar */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-        <Input
-          placeholder="Search by category or note..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-10 bg-slate-800/50 border-slate-700/50 text-white placeholder:text-slate-500 focus:border-emerald-500/50 focus:ring-emerald-500/20 transition-all"
-        />
-      </div>
+      <TableControls
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        placeholder="Search by category or note..."
+        hasActiveFilters={hasActiveFilters}
+        onClearFilters={clearFilters}
+      />
 
       <div className="rounded-lg border border-slate-700/50 overflow-hidden shadow-xl">
         <Table>
@@ -292,19 +189,26 @@ export function IncomeSection({
                 className="text-slate-300 font-semibold cursor-pointer hover:text-emerald-400 transition-colors select-none w-1/4"
                 onClick={() => handleSort("category")}
               >
-                <div className="flex items-center">
-                  Category
-                  {getSortIcon("category")}
-                </div>
+                <SortableHeader
+                  label="Category"
+                  column="category"
+                  sortBy={sortBy}
+                  sortOrder={sortOrder}
+                  onSort={handleSort}
+                />
               </TableHead>
               <TableHead
                 className="text-slate-300 text-right font-semibold cursor-pointer hover:text-emerald-400 transition-colors select-none w-32"
                 onClick={() => handleSort("amount")}
               >
-                <div className="flex items-center justify-end">
-                  Amount
-                  {getSortIcon("amount")}
-                </div>
+                <SortableHeader
+                  label="Amount"
+                  column="amount"
+                  sortBy={sortBy}
+                  sortOrder={sortOrder}
+                  onSort={handleSort}
+                  className="justify-end"
+                />
               </TableHead>
               <TableHead className="text-slate-300 font-semibold">
                 Breakdown
@@ -315,7 +219,7 @@ export function IncomeSection({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {processedIncome.length === 0 ? (
+            {processedData.length === 0 ? (
               <TableRow className="border-slate-700/50 hover:bg-transparent">
                 <TableCell
                   colSpan={4}
@@ -337,7 +241,7 @@ export function IncomeSection({
                 </TableCell>
               </TableRow>
             ) : (
-              processedIncome.map((item, index) => (
+              processedData.map((item, index) => (
                 <TableRow
                   key={item.id}
                   className="border-slate-700/50 hover:bg-gradient-to-r hover:from-slate-800/80 hover:to-slate-800/50 hover:shadow-lg hover:shadow-emerald-500/5 transition-all duration-200 group"
@@ -398,7 +302,7 @@ export function IncomeSection({
                 <div className="text-xs text-slate-500 text-right">
                   {displayIncome.length}{" "}
                   {displayIncome.length === 1 ? "category" : "categories"}
-                  {searchQuery && ` • ${processedIncome.length} visible`}
+                  {searchQuery && ` • ${processedData.length} visible`}
                 </div>
               </TableCell>
             </TableRow>
@@ -422,30 +326,14 @@ export function IncomeSection({
               <Label htmlFor="category" className="text-slate-300">
                 Category
               </Label>
-              <Select
+              <CategorySelect
                 value={formData.category}
                 onValueChange={(value) =>
                   setFormData({ ...formData, category: value })
                 }
-              >
-                <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
-                  <SelectValue placeholder="Select a category" />
-                </SelectTrigger>
-                <SelectContent className="bg-slate-800 border-slate-700">
-                  {INCOME_CATEGORIES.map((cat) => (
-                    <SelectItem
-                      key={cat}
-                      value={cat}
-                      className="text-white focus:bg-slate-700 focus:text-white"
-                    >
-                      <div className="flex items-center gap-2">
-                        <CategoryIcon category={cat} type="income" className="w-4 h-4" />
-                        <span>{cat}</span>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                categories={INCOME_CATEGORIES}
+                type="income"
+              />
             </div>
 
             <div className="space-y-2">
@@ -486,8 +374,8 @@ export function IncomeSection({
             <Button
               variant="ghost"
               onClick={() => {
-                setIsAddDialogOpen(false);
-                setFormData({ category: "", amount: "", note: "" });
+                closeDialog();
+                resetForm();
               }}
               className="text-slate-400"
             >

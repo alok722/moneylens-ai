@@ -13,6 +13,8 @@ interface RegisterRequest {
   username: string;
   password: string;
   name?: string;
+  securityQuestion?: string;
+  securityAnswer?: string;
 }
 
 interface UpdateProfileRequest {
@@ -78,7 +80,7 @@ router.post(
 router.post(
   "/register",
   async (req: Request<object, object, RegisterRequest>, res: Response) => {
-    const { username, password, name } = req.body;
+    const { username, password, name, securityQuestion, securityAnswer } = req.body;
 
     if (!username || !password) {
       res.status(400).json({ error: "Username and password are required" });
@@ -86,7 +88,7 @@ router.post(
     }
 
     try {
-      const user = await authService.register(username, password, name);
+      const user = await authService.register(username, password, name, securityQuestion, securityAnswer);
       res.status(201).json(user);
     } catch (error: any) {
       if (error.message === "USERNAME_TOO_SHORT") {
@@ -95,6 +97,8 @@ router.post(
         res.status(400).json({ error: "Password must be at least 4 characters" });
       } else if (error.message === "USERNAME_EXISTS") {
         res.status(400).json({ error: "Username already exists" });
+      } else if (error.message === "ANSWER_TOO_SHORT") {
+        res.status(400).json({ error: "Security answer must be at least 3 characters" });
       } else {
         logger.error("Registration error:", error);
         res.status(500).json({ error: "Internal server error" });

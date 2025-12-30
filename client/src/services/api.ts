@@ -23,12 +23,16 @@ export async function login(
 export async function register(
   username: string,
   password: string,
-  name?: string
+  name?: string,
+  securityQuestion?: string,
+  securityAnswer?: string
 ): Promise<AuthUser> {
   const response = await api.post<AuthUser>("/auth/register", {
     username,
     password,
     name,
+    securityQuestion,
+    securityAnswer,
   });
   return response.data;
 }

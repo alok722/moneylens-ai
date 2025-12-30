@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { OverviewInsights } from "@/types";
 import {
   fetchOverviewInsights,
@@ -22,11 +22,41 @@ interface OverviewInsightsCardProps {
   userId: string;
 }
 
+const CACHE_KEY_PREFIX = "overviewInsights_";
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
 export function OverviewInsightsCard({ userId }: OverviewInsightsCardProps) {
-  const [insights, setInsights] = useState<OverviewInsights | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [insights, setInsights] = useState<OverviewInsights | null>(() => {
+    // Try to load from cache on mount
+    const cached = localStorage.getItem(`${CACHE_KEY_PREFIX}${userId}`);
+    if (cached) {
+      try {
+        const parsed = JSON.parse(cached);
+        const cacheTime = parsed.cacheTime || 0;
+        const now = Date.now();
+        // If cache is still valid (less than 5 minutes old), use it
+        if (now - cacheTime < CACHE_DURATION) {
+          return parsed.data;
+        }
+      } catch {
+        // Invalid cache, ignore
+      }
+    }
+    return null;
+  });
+  const [isLoading, setIsLoading] = useState(!insights); // Only show loader if no cached data
   const [isRegenerating, setIsRegenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const userIdRef = useRef(userId);
+  const hasLoadedRef = useRef(!!insights); // Set to true if we have cached insights
+
+  // Update ref when userId changes
+  useEffect(() => {
+    if (userIdRef.current !== userId) {
+      userIdRef.current = userId;
+      hasLoadedRef.current = false;
+    }
+  }, [userId]);
 
   // Initialize from localStorage, default to true (expanded)
   const [isExpanded, setIsExpanded] = useState(() => {
@@ -42,22 +72,74 @@ export function OverviewInsightsCard({ userId }: OverviewInsightsCardProps) {
     );
   }, [isExpanded]);
 
+  // Cache insights whenever they change
   useEffect(() => {
-    loadInsights();
-  }, [userId]);
+    if (insights) {
+      localStorage.setItem(
+        `${CACHE_KEY_PREFIX}${userId}`,
+        JSON.stringify({
+          data: insights,
+          cacheTime: Date.now(),
+        })
+      );
+    }
+  }, [insights, userId]);
 
-  const loadInsights = async () => {
+  const loadInsights = useCallback(async (force = false) => {
+    // Skip if we already have insights and not forcing refresh
+    if (!force && hasLoadedRef.current) {
+      return;
+    }
+
     try {
       setIsLoading(true);
       setError(null);
-      const data = await fetchOverviewInsights(userId);
+      const data = await fetchOverviewInsights(userIdRef.current);
       setInsights(data);
+      hasLoadedRef.current = true;
     } catch (err: any) {
       setError(err.message || "Failed to load insights");
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []); // No dependencies - uses refs
+
+  useEffect(() => {
+    // Check if userId changed
+    if (userIdRef.current !== userId) {
+      userIdRef.current = userId;
+      hasLoadedRef.current = false;
+      
+      // Check cache for new userId
+      const cached = localStorage.getItem(`${CACHE_KEY_PREFIX}${userId}`);
+      if (cached) {
+        try {
+          const parsed = JSON.parse(cached);
+          const cacheTime = parsed.cacheTime || 0;
+          const now = Date.now();
+          // If cache is still valid (less than 5 minutes old), use it
+          if (now - cacheTime < CACHE_DURATION) {
+            setInsights(parsed.data);
+            setIsLoading(false);
+            hasLoadedRef.current = true;
+            return; // Don't fetch if we have valid cache
+          }
+        } catch {
+          // Invalid cache, continue to fetch
+        }
+      }
+      
+      // No valid cache, clear and fetch
+      setInsights(null);
+      setIsLoading(true);
+    }
+
+    // Only fetch if we don't have insights and haven't loaded yet
+    if (!insights && !hasLoadedRef.current) {
+      loadInsights();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId]); // Only depend on userId - insights and loadInsights are stable
 
   const handleRegenerate = async () => {
     try {
@@ -65,6 +147,8 @@ export function OverviewInsightsCard({ userId }: OverviewInsightsCardProps) {
       setError(null);
       const data = await regenerateOverviewInsights(userId);
       setInsights(data);
+      // Clear cache and reload
+      localStorage.removeItem(`${CACHE_KEY_PREFIX}${userId}`);
     } catch (err: any) {
       setError(err.message || "Failed to regenerate insights");
     } finally {
@@ -83,7 +167,7 @@ export function OverviewInsightsCard({ userId }: OverviewInsightsCardProps) {
           <div className="flex flex-col items-center justify-center py-8 text-center">
             <AlertCircle className="w-12 h-12 text-red-400 mb-4" />
             <p className="text-red-400 mb-4">{error}</p>
-            <Button onClick={loadInsights} variant="outline" size="sm">
+            <Button onClick={() => loadInsights(true)} variant="outline" size="sm">
               Try Again
             </Button>
           </div>

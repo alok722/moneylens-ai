@@ -25,17 +25,7 @@ import {
   AlertTriangle,
   ShieldCheck,
 } from "lucide-react";
-
-const SECURITY_QUESTIONS = [
-  "What city were you born in?",
-  "What was your first pet's name?",
-  "What is your mother's maiden name?",
-  "What was the name of your first school?",
-  "What is your favorite movie?",
-  "What street did you grow up on?",
-  "What was your childhood nickname?",
-  "What is your favorite book?",
-];
+import { SECURITY_QUESTIONS } from "@/constants/securityQuestions";
 
 export function Register() {
   const [step, setStep] = useState<1 | 2>(1);
@@ -46,7 +36,7 @@ export function Register() {
   const [securityAnswer, setSecurityAnswer] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const { register, setSecurityQuestion: saveSecurityQuestion } = useApp();
+  const { register } = useApp();
   const navigate = useNavigate();
 
   const handleStep1Next = (e: React.FormEvent) => {
@@ -73,16 +63,13 @@ export function Register() {
     setIsLoading(true);
 
     try {
-      // Register account
-      const result = await register(username, password, name);
+      // Register account with security question in one call
+      const result = await register(username, password, name, securityQuestion, securityAnswer);
       if (!result.success) {
         setError(result.error || "Registration failed");
         setIsLoading(false);
         return;
       }
-
-      // Set security question
-      await saveSecurityQuestion(securityQuestion, securityAnswer);
 
       // Navigate to dashboard
       navigate("/dashboard");

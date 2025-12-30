@@ -44,7 +44,9 @@ export class AuthService {
   async register(
     username: string,
     password: string,
-    name?: string
+    name?: string,
+    securityQuestion?: string,
+    securityAnswer?: string
   ): Promise<AuthUser> {
     // Validate username length
     if (username.length < 3) {
@@ -56,6 +58,11 @@ export class AuthService {
       throw new Error("PASSWORD_TOO_SHORT");
     }
 
+    // Validate security answer if provided
+    if (securityQuestion && securityAnswer && securityAnswer.length < 3) {
+      throw new Error("ANSWER_TOO_SHORT");
+    }
+
     // Check if username already exists
     const existingUser = await User.countDocuments({ username });
     if (existingUser > 0) {
@@ -65,15 +72,39 @@ export class AuthService {
     // Hash the password
     const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
 
-    // Create new user
-    const newUser = await User.create({
+    // Prepare user data
+    const userData: {
+      username: string;
+      password: string;
+      name: string;
+      currency: "USD" | "INR";
+      securityQuestion?: string;
+      securityAnswerHash?: string;
+      hasConfiguredSecurity?: boolean;
+    } = {
       username,
       password: hashedPassword,
       name: name || username,
       currency: "INR",
-    });
+    };
 
-    logger.info(`New user registered: ${username}`);
+    // Add security question if provided
+    if (securityQuestion && securityAnswer) {
+      const normalizedAnswer = securityAnswer.toLowerCase().trim();
+      const hashedAnswer = await bcrypt.hash(normalizedAnswer, SALT_ROUNDS);
+      userData.securityQuestion = securityQuestion;
+      userData.securityAnswerHash = hashedAnswer;
+      userData.hasConfiguredSecurity = true;
+    }
+
+    // Create new user
+    const newUser = await User.create(userData);
+
+    logger.info(
+      `New user registered: ${username}${
+        securityQuestion ? " (with security question)" : ""
+      }`
+    );
 
     return {
       id: newUser._id.toString(),
@@ -138,9 +169,8 @@ export class AuthService {
     // Hash new password
     const hashedPassword = await bcrypt.hash(newPassword, SALT_ROUNDS);
 
-    // Update password
-    user.password = hashedPassword;
-    await user.save();
+    // Update ONLY the password field to avoid affecting other fields
+    await User.findByIdAndUpdate(userId, { password: hashedPassword });
 
     logger.info(`Password changed for user: ${user.username}`);
 

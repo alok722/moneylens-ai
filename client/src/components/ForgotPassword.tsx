@@ -10,7 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Wallet, Loader2, ArrowLeft, AlertTriangle, CheckCircle2, ShieldAlert } from "lucide-react";
+import { Loader2, ArrowLeft, AlertTriangle, CheckCircle2, ShieldAlert } from "lucide-react";
 import { getSecurityQuestion, resetPasswordWithSecurity } from "@/services/api";
 import { toast } from "sonner";
 
