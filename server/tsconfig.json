@@ -13,9 +13,9 @@
     "resolveJsonModule": true,
     "declaration": true,
     "declarationMap": true,
-    "types": ["node"]
+    "typeRoots": ["./node_modules/@types"]
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "**/*.test.ts"]
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "dist", "src/__tests__/**/*", "**/*.test.ts", "**/*.spec.ts", "src/tests-setup.ts"]
 }
 
