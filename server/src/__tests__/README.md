@@ -8,8 +8,13 @@ This comprehensive End-to-End test suite ensures the accuracy and reliability of
 
 ### 1. **Authentication**
 - User registration with validation
+- Setting and updating security questions
+- Retrieving security questions by username
+- Password reset via security questions
+- Admin account protection from password resets
 - Login with valid/invalid credentials
 - Username and password length requirements
+- Security answer validation
 
 ### 2. **Month Data Management**
 - Creating new months

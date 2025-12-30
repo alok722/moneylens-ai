@@ -5,6 +5,9 @@ export interface IUser extends Document {
   password: string;
   name?: string;
   currency: 'USD' | 'INR';
+  securityQuestion?: string;
+  securityAnswerHash?: string;
+  hasConfiguredSecurity?: boolean;
 }
 
 const userSchema = new Schema<IUser>({
@@ -25,6 +28,16 @@ const userSchema = new Schema<IUser>({
     type: String,
     enum: ['USD', 'INR'],
     default: 'INR',
+  },
+  securityQuestion: {
+    type: String,
+  },
+  securityAnswerHash: {
+    type: String,
+  },
+  hasConfiguredSecurity: {
+    type: Boolean,
+    default: false,
   },
 }, {
   timestamps: false,

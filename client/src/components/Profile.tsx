@@ -36,11 +36,24 @@ import {
   Lock,
   AlertTriangle,
   ShieldAlert,
+  ShieldCheck,
 } from "lucide-react";
 import { formatCurrency } from "@/utils/calculations";
 import type { RecurringExpense } from "@/types";
 import { toast } from "sonner";
 import { CategoryIcon } from "@/components/Tables/CategoryIcon";
+import { getSecurityQuestion } from "@/services/api";
+
+const SECURITY_QUESTIONS = [
+  "What city were you born in?",
+  "What was your first pet's name?",
+  "What is your mother's maiden name?",
+  "What was the name of your first school?",
+  "What is your favorite movie?",
+  "What street did you grow up on?",
+  "What was your childhood nickname?",
+  "What is your favorite book?",
+];
 
 const EXPENSE_CATEGORIES = [
   "Rent",
@@ -70,6 +83,7 @@ export function Profile() {
     recurringExpenses,
     deleteRecurringExpense,
     updateRecurringExpense,
+    updateSecurityQuestion,
   } = useApp();
   const [name, setName] = useState(user?.name || user?.username || "");
   const [selectedCurrency, setSelectedCurrency] = useState<"USD" | "INR">(
@@ -84,6 +98,15 @@ export function Profile() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isChangingPassword, setIsChangingPassword] = useState(false);
+
+  // Security question state
+  const [securityQuestionDialogOpen, setSecurityQuestionDialogOpen] = useState(false);
+  const [currentSecurityQuestion, setCurrentSecurityQuestion] = useState<string>("");
+  const [newSecurityQuestion, setNewSecurityQuestion] = useState<string>("");
+  const [newSecurityAnswer, setNewSecurityAnswer] = useState<string>("");
+  const [securityPassword, setSecurityPassword] = useState<string>("");
+  const [loadingSecurityQuestion, setLoadingSecurityQuestion] = useState(false);
+  const [isUpdatingSecurity, setIsUpdatingSecurity] = useState(false);
 
   // Account deletion state
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -162,6 +185,55 @@ export function Profile() {
       // Error already shown in toast by context
     } finally {
       setIsChangingPassword(false);
+    }
+  };
+
+  const handleOpenSecurityDialog = async () => {
+    if (!user?.username) return;
+    
+    setLoadingSecurityQuestion(true);
+    try {
+      const result = await getSecurityQuestion(user.username);
+      if (result.question) {
+        setCurrentSecurityQuestion(result.question);
+        setNewSecurityQuestion(result.question);
+      }
+      setSecurityQuestionDialogOpen(true);
+    } catch (error) {
+      toast.error("Failed to load security question");
+    } finally {
+      setLoadingSecurityQuestion(false);
+    }
+  };
+
+  const handleUpdateSecurityQuestion = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!newSecurityQuestion) {
+      toast.error("Please select a security question");
+      return;
+    }
+    
+    if (newSecurityAnswer.length < 3) {
+      toast.error("Answer must be at least 3 characters");
+      return;
+    }
+    
+    if (!securityPassword) {
+      toast.error("Current password is required");
+      return;
+    }
+    
+    setIsUpdatingSecurity(true);
+    try {
+      await updateSecurityQuestion(securityPassword, newSecurityQuestion, newSecurityAnswer);
+      setSecurityQuestionDialogOpen(false);
+      setNewSecurityAnswer("");
+      setSecurityPassword("");
+    } catch (error) {
+      // Error already handled by context
+    } finally {
+      setIsUpdatingSecurity(false);
     }
   };
 
@@ -402,6 +474,60 @@ export function Profile() {
               )}
             </Button>
           </form>
+        </CardContent>
+      </Card>
+
+      {/* Security Question - Account Recovery */}
+      <Card className="bg-slate-800/50 border-slate-700">
+        <CardHeader>
+          <CardTitle className="text-white flex items-center gap-2">
+            <ShieldCheck className="w-5 h-5" />
+            Account Recovery
+          </CardTitle>
+          <CardDescription className="text-slate-400">
+            Security question for password recovery
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {!isAdminUser ? (
+            <>
+              <div className="rounded-lg bg-emerald-900/20 border border-emerald-600/30 p-4">
+                <div className="flex items-start gap-3">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium text-emerald-300">
+                      Security Question Configured
+                    </p>
+                    <p className="text-sm text-emerald-200/80 mt-1">
+                      Your security question can be used to reset your password if you forget it.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <Button
+                onClick={handleOpenSecurityDialog}
+                disabled={loadingSecurityQuestion}
+                className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold"
+              >
+                {loadingSecurityQuestion ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Loading...
+                  </>
+                ) : (
+                  "Change Security Question"
+                )}
+              </Button>
+            </>
+          ) : (
+            <div className="rounded-lg bg-amber-900/20 border border-amber-600/30 p-3 flex items-start gap-2">
+              <AlertTriangle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-amber-200">
+                Security questions are not available for the admin account.
+              </p>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -769,6 +895,126 @@ export function Profile() {
               Save Changes
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Security Question Update Dialog */}
+      <Dialog open={securityQuestionDialogOpen} onOpenChange={setSecurityQuestionDialogOpen}>
+        <DialogContent className="bg-slate-800 border-slate-700 text-white sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <ShieldCheck className="w-5 h-5 text-emerald-400" />
+              Change Security Question
+            </DialogTitle>
+            <DialogDescription className="text-slate-400">
+              Update your security question and answer for account recovery.
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={handleUpdateSecurityQuestion}>
+            {/* Warning Banner */}
+            <div className="rounded-lg bg-amber-900/20 border border-amber-600/30 p-4 mb-4">
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
+                <div className="space-y-1">
+                  <p className="text-sm font-semibold text-amber-200">🔐 Important:</p>
+                  <p className="text-sm text-amber-200/90">
+                    Changing your security question requires your current password for verification. Make sure to remember your new answer!
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {currentSecurityQuestion && (
+              <div className="rounded-lg bg-slate-700/30 border border-slate-600/50 p-3 mb-4">
+                <Label className="text-xs text-slate-400">Current Question</Label>
+                <p className="text-sm text-slate-300 mt-1">{currentSecurityQuestion}</p>
+              </div>
+            )}
+
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="new-security-question" className="text-slate-300">
+                  New Security Question *
+                </Label>
+                <Select value={newSecurityQuestion} onValueChange={setNewSecurityQuestion}>
+                  <SelectTrigger className="bg-slate-900/50 border-slate-600 text-white focus:border-emerald-500 focus:ring-emerald-500/20">
+                    <SelectValue placeholder="Select a security question" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-slate-800 border-slate-700">
+                    {SECURITY_QUESTIONS.map((q) => (
+                      <SelectItem key={q} value={q} className="text-white focus:bg-slate-700 focus:text-white">
+                        {q}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="new-security-answer" className="text-slate-300">
+                  Your Answer * <span className="text-xs text-slate-500">(min. 3 characters)</span>
+                </Label>
+                <Input
+                  id="new-security-answer"
+                  type="text"
+                  placeholder="Enter your answer"
+                  value={newSecurityAnswer}
+                  onChange={(e) => setNewSecurityAnswer(e.target.value)}
+                  required
+                  className="bg-slate-900/50 border-slate-600 text-white placeholder:text-slate-500 focus:border-emerald-500 focus:ring-emerald-500/20"
+                />
+                <p className="text-xs text-slate-500">
+                  Answers are not case-sensitive. Keep it simple and memorable.
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="security-current-password" className="text-slate-300">
+                  Current Password *
+                </Label>
+                <Input
+                  id="security-current-password"
+                  type="password"
+                  placeholder="Enter your current password"
+                  value={securityPassword}
+                  onChange={(e) => setSecurityPassword(e.target.value)}
+                  required
+                  className="bg-slate-900/50 border-slate-600 text-white placeholder:text-slate-500 focus:border-emerald-500 focus:ring-emerald-500/20"
+                />
+              </div>
+            </div>
+
+            <DialogFooter className="gap-2 sm:gap-0 mt-6">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => {
+                  setSecurityQuestionDialogOpen(false);
+                  setNewSecurityAnswer("");
+                  setSecurityPassword("");
+                }}
+                disabled={isUpdatingSecurity}
+                className="text-slate-400 hover:text-white hover:bg-slate-700/50"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={isUpdatingSecurity}
+                className="bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 text-white font-semibold"
+              >
+                {isUpdatingSecurity ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Updating...
+                  </>
+                ) : (
+                  "Update Security Question"
+                )}
+              </Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
     </div>

@@ -7,6 +7,7 @@ Take control of your finances with AI-powered insights. Track income, manage exp
 ## ✨ What You Can Do
 
 ### Track Your Money
+
 - Add income and expenses with detailed notes
 - Organize by categories (Rent, Groceries, Shopping, etc.)
 - Tag expenses as Need, Want, or Neutral
@@ -14,6 +15,7 @@ Take control of your finances with AI-powered insights. Track income, manage exp
 - Track balance across months automatically
 
 ### Get Smart Insights
+
 - See your financial health score (0-100)
 - Get personalized recommendations from AI
 - Compare spending month-over-month
@@ -21,6 +23,7 @@ Take control of your finances with AI-powered insights. Track income, manage exp
 - All insights cached for 24 hours for fast access
 
 ### Visualize Your Data
+
 - Interactive pie charts for expense breakdown
 - Bar charts comparing income vs expenses
 - Track your savings over time
@@ -28,9 +31,11 @@ Take control of your finances with AI-powered insights. Track income, manage exp
 - Export data to Excel anytime
 
 ### Stay Secure
-- Password-protected accounts
+
+- Password-protected accounts with security questions
+- Account recovery via security questions (no email needed)
 - Each user's data is isolated
-- Change password or delete account anytime
+- Change password, security questions, or delete account anytime
 - Works on desktop, tablet, and mobile
 
 ## 🚀 Quick Start
@@ -44,6 +49,7 @@ Take control of your finances with AI-powered insights. Track income, manage exp
 **Prerequisites:** Node.js 18+, Yarn, MongoDB Atlas account, Gemini API key
 
 1. **Install**
+
 ```bash
 git clone <repository-url>
 cd expense-tracker-dashboard
@@ -53,6 +59,7 @@ yarn install
 2. **Configure**
 
 Create `server/.env`:
+
 ```env
 DB_PASSWORD=your_mongodb_password
 PORT=5001
@@ -61,11 +68,13 @@ GEMINI_MODEL=gemini-2.5-flash-lite
 ```
 
 Create `client/.env`:
+
 ```env
 VITE_API_BASE_URL=http://localhost:5001/api
 ```
 
 3. **Run**
+
 ```bash
 yarn dev
 ```
@@ -75,18 +84,22 @@ Visit [http://localhost:3000](http://localhost:3000)
 ## 📖 How to Use
 
 ### Getting Started
-1. Login or create an account
-2. Click "Add Period" to start tracking a new month
-3. Add your income sources
-4. Record your expenses with categories and tags
-5. View your financial insights on the dashboard
+
+1. Create an account with mandatory security question setup
+2. Login with your credentials
+3. Click "Add Period" to start tracking a new month
+4. Add your income sources
+5. Record your expenses with categories and tags
+6. View your financial insights on the dashboard
 
 ### Key Features
+
 - **Search & Filter**: Find transactions instantly
 - **Edit Anytime**: Modify amounts, notes, or tags
 - **AI Insights**: Get financial advice on dashboard and month details
 - **Export Data**: Download Excel reports
-- **Profile Settings**: Update name, currency (INR/USD), password, or manage recurring expenses
+- **Profile Settings**: Update name, currency (INR/USD), password, security questions, or manage recurring expenses
+- **Password Recovery**: Reset forgotten password using security questions (no email required)
 
 ## 🏗️ Built With
 
@@ -103,6 +116,7 @@ Visit [http://localhost:3000](http://localhost:3000)
 ## 🎯 Planned Features
 
 - [x] ~~🔐 User Authentication & Security~~
+- [x] ~~🔑 Password Recovery via Security Questions~~
 - [x] ~~💰 Multi-Period Financial Tracking~~
 - [x] ~~📊 Interactive Charts & Visualizations~~
 - [x] ~~🤖 AI-Powered Insights with Gemini~~

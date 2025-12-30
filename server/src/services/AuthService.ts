@@ -186,6 +186,184 @@ export class AuthService {
 
     return { message: "Account deleted successfully" };
   }
+
+  /**
+   * Set security question for a user (initial setup)
+   */
+  async setSecurityQuestion(
+    userId: string,
+    question: string,
+    answer: string
+  ): Promise<{ message: string }> {
+    // Validate inputs
+    if (!question || !answer) {
+      throw new Error("QUESTION_AND_ANSWER_REQUIRED");
+    }
+
+    if (answer.length < 3) {
+      throw new Error("ANSWER_TOO_SHORT");
+    }
+
+    // Find user
+    const user = await User.findById(userId);
+
+    if (!user) {
+      throw new Error("USER_NOT_FOUND");
+    }
+
+    // Normalize and hash the answer
+    const normalizedAnswer = answer.toLowerCase().trim();
+    const hashedAnswer = await bcrypt.hash(normalizedAnswer, SALT_ROUNDS);
+
+    // Update user with security question
+    user.securityQuestion = question;
+    user.securityAnswerHash = hashedAnswer;
+    user.hasConfiguredSecurity = true;
+    await user.save();
+
+    logger.info(`Security question set for user: ${user.username}`);
+
+    return { message: "Security question set successfully" };
+  }
+
+  /**
+   * Update security question (requires current password verification)
+   */
+  async updateSecurityQuestion(
+    userId: string,
+    currentPassword: string,
+    question: string,
+    answer: string
+  ): Promise<{ message: string }> {
+    // Validate inputs
+    if (!question || !answer || !currentPassword) {
+      throw new Error("ALL_FIELDS_REQUIRED");
+    }
+
+    if (answer.length < 3) {
+      throw new Error("ANSWER_TOO_SHORT");
+    }
+
+    // Find user
+    const user = await User.findById(userId);
+
+    if (!user) {
+      throw new Error("USER_NOT_FOUND");
+    }
+
+    // Verify current password
+    const passwordMatch = await bcrypt.compare(currentPassword, user.password);
+
+    if (!passwordMatch) {
+      throw new Error("INVALID_PASSWORD");
+    }
+
+    // Normalize and hash the new answer
+    const normalizedAnswer = answer.toLowerCase().trim();
+    const hashedAnswer = await bcrypt.hash(normalizedAnswer, SALT_ROUNDS);
+
+    // Update security question
+    user.securityQuestion = question;
+    user.securityAnswerHash = hashedAnswer;
+    user.hasConfiguredSecurity = true;
+    await user.save();
+
+    logger.info(`Security question updated for user: ${user.username}`);
+
+    return { message: "Security question updated successfully" };
+  }
+
+  /**
+   * Get security question for a username (public endpoint for password reset)
+   */
+  async getSecurityQuestion(username: string): Promise<{
+    question: string | null;
+    hasSecurityQuestion: boolean;
+    isAdmin: boolean;
+  }> {
+    // Check if admin
+    const isAdmin = username.toLowerCase() === "admin";
+
+    // Find user
+    const user = await User.findOne({ username });
+
+    // Return generic response if user doesn't exist (security)
+    if (!user) {
+      return {
+        question: null,
+        hasSecurityQuestion: false,
+        isAdmin,
+      };
+    }
+
+    logger.info(`Security question requested for user: ${username}`);
+
+    return {
+      question: user.securityQuestion || null,
+      hasSecurityQuestion: !!user.securityQuestion,
+      isAdmin,
+    };
+  }
+
+  /**
+   * Verify security answer (internal helper)
+   */
+  private async verifySecurityAnswer(
+    username: string,
+    answer: string
+  ): Promise<boolean> {
+    const user = await User.findOne({ username });
+
+    if (!user || !user.securityAnswerHash) {
+      return false;
+    }
+
+    const normalizedAnswer = answer.toLowerCase().trim();
+    return bcrypt.compare(normalizedAnswer, user.securityAnswerHash);
+  }
+
+  /**
+   * Reset password using security question
+   */
+  async resetPasswordWithSecurity(
+    username: string,
+    securityAnswer: string,
+    newPassword: string
+  ): Promise<{ message: string }> {
+    // Check if admin
+    if (username.toLowerCase() === "admin") {
+      throw new Error("ADMIN_PASSWORD_RESET_BLOCKED");
+    }
+
+    // Validate new password
+    if (newPassword.length < 4) {
+      throw new Error("PASSWORD_TOO_SHORT");
+    }
+
+    // Verify security answer
+    const isValid = await this.verifySecurityAnswer(username, securityAnswer);
+
+    if (!isValid) {
+      logger.warn(`Failed password reset attempt for user: ${username}`);
+      throw new Error("INVALID_SECURITY_ANSWER");
+    }
+
+    // Find user and update password
+    const user = await User.findOne({ username });
+
+    if (!user) {
+      throw new Error("USER_NOT_FOUND");
+    }
+
+    // Hash new password
+    const hashedPassword = await bcrypt.hash(newPassword, SALT_ROUNDS);
+    user.password = hashedPassword;
+    await user.save();
+
+    logger.info(`Password reset successfully for user: ${username}`);
+
+    return { message: "Password reset successfully" };
+  }
 }
 
 // Export singleton instance

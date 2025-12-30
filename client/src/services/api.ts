@@ -69,6 +69,57 @@ export async function deleteAccount(
   return response.data;
 }
 
+// Security Questions
+export async function setSecurityQuestion(
+  userId: string,
+  question: string,
+  answer: string
+): Promise<{ message: string }> {
+  const response = await api.post<{ message: string }>("/auth/security-question", {
+    userId,
+    question,
+    answer,
+  });
+  return response.data;
+}
+
+export async function updateSecurityQuestion(
+  userId: string,
+  currentPassword: string,
+  question: string,
+  answer: string
+): Promise<{ message: string }> {
+  const response = await api.put<{ message: string }>("/auth/security-question", {
+    userId,
+    currentPassword,
+    question,
+    answer,
+  });
+  return response.data;
+}
+
+export async function getSecurityQuestion(
+  username: string
+): Promise<{ question: string | null; hasSecurityQuestion: boolean; isAdmin: boolean }> {
+  const response = await api.get<{ question: string | null; hasSecurityQuestion: boolean; isAdmin: boolean }>(
+    `/auth/security-question/${username}`
+  );
+  return response.data;
+}
+
+export async function resetPasswordWithSecurity(
+  username: string,
+  securityAnswer: string,
+  newPassword: string
+): Promise<{ message: string }> {
+  const response = await api.post<{ message: string }>("/auth/reset-password-security", {
+    username,
+    securityAnswer,
+    newPassword,
+  });
+  return response.data;
+}
+
 // Data
 export async function fetchMonthsData(userId: string): Promise<MonthData[]> {
   const response = await api.get<MonthData[]>("/data", {

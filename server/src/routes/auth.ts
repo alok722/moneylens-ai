@@ -32,6 +32,25 @@ interface DeleteAccountRequest {
   password: string;
 }
 
+interface SetSecurityQuestionRequest {
+  userId: string;
+  question: string;
+  answer: string;
+}
+
+interface UpdateSecurityQuestionRequest {
+  userId: string;
+  currentPassword: string;
+  question: string;
+  answer: string;
+}
+
+interface ResetPasswordSecurityRequest {
+  username: string;
+  securityAnswer: string;
+  newPassword: string;
+}
+
 router.post(
   "/login",
   async (req: Request<object, object, LoginRequest>, res: Response) => {
@@ -156,6 +175,125 @@ router.delete(
         res.status(401).json({ error: "Password is incorrect" });
       } else {
         logger.error("Account deletion error:", error);
+        res.status(500).json({ error: "Internal server error" });
+      }
+    }
+  }
+);
+
+// Security Question Routes
+
+router.post(
+  "/security-question",
+  async (req: Request<object, object, SetSecurityQuestionRequest>, res: Response) => {
+    const { userId, question, answer } = req.body;
+
+    if (!userId || !question || !answer) {
+      res.status(400).json({ error: "User ID, question, and answer are required" });
+      return;
+    }
+
+    try {
+      const result = await authService.setSecurityQuestion(userId, question, answer);
+      res.json(result);
+    } catch (error: any) {
+      if (error.message === "USER_NOT_FOUND") {
+        res.status(404).json({ error: "User not found" });
+      } else if (error.message === "ANSWER_TOO_SHORT") {
+        res.status(400).json({ error: "Answer must be at least 3 characters" });
+      } else if (error.message === "QUESTION_AND_ANSWER_REQUIRED") {
+        res.status(400).json({ error: "Question and answer are required" });
+      } else {
+        logger.error("Set security question error:", error);
+        res.status(500).json({ error: "Internal server error" });
+      }
+    }
+  }
+);
+
+router.put(
+  "/security-question",
+  async (req: Request<object, object, UpdateSecurityQuestionRequest>, res: Response) => {
+    const { userId, currentPassword, question, answer } = req.body;
+
+    if (!userId || !currentPassword || !question || !answer) {
+      res.status(400).json({ error: "All fields are required" });
+      return;
+    }
+
+    try {
+      const result = await authService.updateSecurityQuestion(
+        userId,
+        currentPassword,
+        question,
+        answer
+      );
+      res.json(result);
+    } catch (error: any) {
+      if (error.message === "USER_NOT_FOUND") {
+        res.status(404).json({ error: "User not found" });
+      } else if (error.message === "INVALID_PASSWORD") {
+        res.status(401).json({ error: "Current password is incorrect" });
+      } else if (error.message === "ANSWER_TOO_SHORT") {
+        res.status(400).json({ error: "Answer must be at least 3 characters" });
+      } else if (error.message === "ALL_FIELDS_REQUIRED") {
+        res.status(400).json({ error: "All fields are required" });
+      } else {
+        logger.error("Update security question error:", error);
+        res.status(500).json({ error: "Internal server error" });
+      }
+    }
+  }
+);
+
+router.get(
+  "/security-question/:username",
+  async (req: Request, res: Response) => {
+    const { username } = req.params;
+
+    if (!username) {
+      res.status(400).json({ error: "Username is required" });
+      return;
+    }
+
+    try {
+      const result = await authService.getSecurityQuestion(username);
+      res.json(result);
+    } catch (error: any) {
+      logger.error("Get security question error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+);
+
+router.post(
+  "/reset-password-security",
+  async (req: Request<object, object, ResetPasswordSecurityRequest>, res: Response) => {
+    const { username, securityAnswer, newPassword } = req.body;
+
+    if (!username || !securityAnswer || !newPassword) {
+      res.status(400).json({ error: "Username, security answer, and new password are required" });
+      return;
+    }
+
+    try {
+      const result = await authService.resetPasswordWithSecurity(
+        username,
+        securityAnswer,
+        newPassword
+      );
+      res.json(result);
+    } catch (error: any) {
+      if (error.message === "ADMIN_PASSWORD_RESET_BLOCKED") {
+        res.status(403).json({ error: "Password reset is not available for the admin account" });
+      } else if (error.message === "INVALID_SECURITY_ANSWER") {
+        res.status(401).json({ error: "Invalid security answer" });
+      } else if (error.message === "PASSWORD_TOO_SHORT") {
+        res.status(400).json({ error: "New password must be at least 4 characters" });
+      } else if (error.message === "USER_NOT_FOUND") {
+        res.status(404).json({ error: "User not found" });
+      } else {
+        logger.error("Password reset error:", error);
         res.status(500).json({ error: "Internal server error" });
       }
     }

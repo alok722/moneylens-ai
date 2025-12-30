@@ -50,6 +50,31 @@ describe("E2E Tests - Expense Tracker API with Calculation Verification", () => 
       userId = response.body.id;
     });
 
+    it("should set security question for user", async () => {
+      const response = await request(app)
+        .post("/api/auth/security-question")
+        .send({
+          userId,
+          question: "What is your pet's name?",
+          answer: "Fluffy",
+        });
+
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+      expect(response.body.hasConfiguredSecurity).toBe(true);
+    });
+
+    it("should retrieve security question by username", async () => {
+      const response = await request(app).get(
+        `/api/auth/security-question/${testUsername}`
+      );
+
+      expect(response.status).toBe(200);
+      expect(response.body.question).toBe("What is your pet's name?");
+      expect(response.body.hasSecurityQuestion).toBe(true);
+      expect(response.body.isAdmin).toBe(false);
+    });
+
     it("should login with valid credentials", async () => {
       const response = await request(app).post("/api/auth/login").send({
         username: testUsername,
@@ -59,6 +84,81 @@ describe("E2E Tests - Expense Tracker API with Calculation Verification", () => 
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty("id");
       expect(response.body.id).toBe(userId);
+    });
+
+    it("should reset password using security question", async () => {
+      const response = await request(app)
+        .post("/api/auth/reset-password-security")
+        .send({
+          username: testUsername,
+          answer: "Fluffy",
+          newPassword: "newpass456",
+        });
+
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+
+      // Verify login with new password
+      const loginResponse = await request(app).post("/api/auth/login").send({
+        username: testUsername,
+        password: "newpass456",
+      });
+
+      expect(loginResponse.status).toBe(200);
+      expect(loginResponse.body.id).toBe(userId);
+    });
+
+    it("should update security question with current password", async () => {
+      const response = await request(app)
+        .put("/api/auth/security-question")
+        .send({
+          userId,
+          currentPassword: "newpass456",
+          question: "What city were you born in?",
+          answer: "Mumbai",
+        });
+
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+
+      // Verify question was updated
+      const getResponse = await request(app).get(
+        `/api/auth/security-question/${testUsername}`
+      );
+      expect(getResponse.body.question).toBe("What city were you born in?");
+    });
+
+    it("should reject password reset with wrong security answer", async () => {
+      const response = await request(app)
+        .post("/api/auth/reset-password-security")
+        .send({
+          username: testUsername,
+          answer: "WrongAnswer",
+          newPassword: "hackpass123",
+        });
+
+      expect(response.status).toBe(401);
+      expect(response.body.error).toContain("Invalid");
+    });
+
+    it("should prevent admin password reset via security questions", async () => {
+      const response = await request(app).get(
+        "/api/auth/security-question/admin"
+      );
+
+      expect(response.status).toBe(200);
+      expect(response.body.isAdmin).toBe(true);
+
+      const resetResponse = await request(app)
+        .post("/api/auth/reset-password-security")
+        .send({
+          username: "admin",
+          answer: "anything",
+          newPassword: "hack123",
+        });
+
+      expect(resetResponse.status).toBe(403);
+      expect(resetResponse.body.error).toContain("admin");
     });
 
     it("should reject login with invalid credentials", async () => {

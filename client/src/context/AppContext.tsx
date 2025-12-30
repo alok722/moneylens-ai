@@ -100,6 +100,12 @@ interface AppContextType {
     id: string,
     updates: { category?: string; amount?: number; note?: string; tag?: string }
   ) => Promise<void>;
+  setSecurityQuestion: (question: string, answer: string) => Promise<void>;
+  updateSecurityQuestion: (
+    currentPassword: string,
+    question: string,
+    answer: string
+  ) => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -530,6 +536,34 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const setSecurityQuestion = async (question: string, answer: string) => {
+    if (!user) return;
+    try {
+      await api.setSecurityQuestion(user.id, question, answer);
+      toast.success("Security question set successfully");
+    } catch (err: any) {
+      const errorMsg = err.response?.data?.error || "Failed to set security question";
+      toast.error(errorMsg);
+      throw err;
+    }
+  };
+
+  const updateSecurityQuestion = async (
+    currentPassword: string,
+    question: string,
+    answer: string
+  ) => {
+    if (!user) return;
+    try {
+      await api.updateSecurityQuestion(user.id, currentPassword, question, answer);
+      toast.success("Security question updated successfully");
+    } catch (err: any) {
+      const errorMsg = err.response?.data?.error || "Failed to update security question";
+      toast.error(errorMsg);
+      throw err;
+    }
+  };
+
   return (
     <AppContext.Provider
       value={{
@@ -563,6 +597,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         createRecurringExpense,
         deleteRecurringExpense,
         updateRecurringExpense,
+        setSecurityQuestion,
+        updateSecurityQuestion,
       }}
     >
       {children}
