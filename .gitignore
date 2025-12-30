@@ -1,19 +1,14 @@
-# Dependencies
-node_modules/
-.pnp
-.pnp.js
+# Deployment files
+.env
+.env.local
+.env.production
 
 # Build outputs
 dist/
 build/
-*.tsbuildinfo
 
-# Environment variables
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+# Dependencies
+node_modules/
 
 # Logs
 logs/
@@ -21,19 +16,10 @@ logs/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
 
-# Runtime data
-pids/
-*.pid
-*.seed
-*.pid.lock
-
-# Coverage directory used by tools like istanbul
-coverage/
-*.lcov
-.nyc_output/
+# OS
+.DS_Store
+Thumbs.db
 
 # IDE
 .vscode/
@@ -41,59 +27,9 @@ coverage/
 *.swp
 *.swo
 *~
-.project
-.classpath
-.settings/
 
-# OS
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-Desktop.ini
+# Testing
+coverage/
 
-# Cache
+# Misc
 .cache/
-.parcel-cache/
-.eslintcache
-.stylelintcache
-
-# Temporary files
-*.tmp
-*.temp
-.tmp/
-.temp/
-
-# Optional npm cache directory
-.npm
-
-# Optional eslint cache
-.eslintcache
-
-# Optional REPL history
-.node_repl_history
-
-# Output of 'npm pack'
-*.tgz
-
-# Yarn
-.yarn/cache
-.yarn/unplugged
-.yarn/build-state.yml
-.yarn/install-state.gz
-.pnp.*
-
-# Vite
-dist-ssr/
-*.local
-
-# TypeScript
-*.tsbuildinfo
-
-# Server data (if sensitive)
-# server/data/*.json
-# Uncomment above if you don't want to track data files
-
