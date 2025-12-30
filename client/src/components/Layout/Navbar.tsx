@@ -1,4 +1,4 @@
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import { useApp } from "@/context/AppContext";
 import { Button } from "@/components/ui/button";
 import { Wallet, LogOut, LayoutDashboard, User } from "lucide-react";
@@ -6,11 +6,16 @@ import { Wallet, LogOut, LayoutDashboard, User } from "lucide-react";
 export function Navbar() {
   const { user, logout } = useApp();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleLogout = () => {
     logout();
     navigate("/");
   };
+
+  // Check if we're on Dashboard or Month Detail (which is part of dashboard navigation)
+  const isDashboardActive = location.pathname === "/dashboard" || 
+                           location.pathname.startsWith("/month/");
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-slate-700/50 bg-slate-900/95 backdrop-blur supports-[backdrop-filter]:bg-slate-900/80">
@@ -26,7 +31,7 @@ export function Navbar() {
           </Link>
 
           <div className="flex items-center gap-4">
-            <Link to="/dashboard">
+            <Link to="/dashboard" className="relative">
               <Button
                 variant="ghost"
                 className="text-slate-300 hover:text-white hover:bg-slate-800"
@@ -34,9 +39,12 @@ export function Navbar() {
                 <LayoutDashboard className="w-4 h-4 mr-2" />
                 Dashboard
               </Button>
+              {isDashboardActive && (
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-emerald-400 to-cyan-400" />
+              )}
             </Link>
 
-            <Link to="/profile">
+            <Link to="/profile" className="relative">
               <Button
                 variant="ghost"
                 className="text-slate-300 hover:text-white hover:bg-slate-800"
@@ -44,6 +52,9 @@ export function Navbar() {
                 <User className="w-4 h-4 mr-2" />
                 {user?.name || user?.username || "Profile"}
               </Button>
+              {location.pathname === "/profile" && (
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-emerald-400 to-cyan-400" />
+              )}
             </Link>
 
             <Button
