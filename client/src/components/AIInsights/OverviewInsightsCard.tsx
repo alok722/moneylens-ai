@@ -7,6 +7,7 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { InsightItem } from "./InsightItem";
+import { InsightsSkeleton } from "@/components/Skeletons/InsightsSkeleton";
 import {
   RefreshCw,
   Loader2,
@@ -72,15 +73,7 @@ export function OverviewInsightsCard({ userId }: OverviewInsightsCardProps) {
   };
 
   if (isLoading) {
-    return (
-      <Card className="bg-slate-800/50 border-slate-700/50">
-        <CardContent className="p-6">
-          <div className="flex items-center justify-center py-16">
-            <Loader2 className="w-8 h-8 animate-spin text-emerald-400" />
-          </div>
-        </CardContent>
-      </Card>
-    );
+    return <InsightsSkeleton />;
   }
 
   if (error) {

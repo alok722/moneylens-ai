@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useApp } from "@/context/AppContext";
 import { Button } from "@/components/ui/button";
@@ -27,6 +27,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
+import { RecurringExpensesSkeleton } from "@/components/Skeletons/RecurringExpensesSkeleton";
 import {
   User,
   Loader2,
@@ -92,6 +93,7 @@ export function Profile() {
   const [isLoading, setIsLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
+  const [isLoadingRecurringExpenses, setIsLoadingRecurringExpenses] = useState(true);
 
   // Password change state
   const [currentPassword, setCurrentPassword] = useState("");
@@ -133,6 +135,15 @@ export function Profile() {
     note: "",
     tag: "neutral" as "need" | "want" | "neutral",
   });
+
+  // Load recurring expenses on mount
+  useEffect(() => {
+    // Simulate loading state - in real app, this would track actual API call
+    const timer = setTimeout(() => {
+      setIsLoadingRecurringExpenses(false);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -541,7 +552,9 @@ export function Profile() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {recurringExpenses.length === 0 ? (
+          {isLoadingRecurringExpenses ? (
+            <RecurringExpensesSkeleton />
+          ) : recurringExpenses.length === 0 ? (
             <div className="text-center py-8 text-slate-500">
               No recurring expenses yet. Mark an expense as recurring when
               creating it.

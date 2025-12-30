@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { IncomeSection } from "./IncomeSection";
 import { ExpenseSection } from "./ExpenseSection";
 import { MonthlyInsightsCard } from "./AIInsights/MonthlyInsightsCard";
+import { MonthDetailSkeleton } from "./Skeletons/MonthDetailSkeleton";
 import { ExpenseBreakdownChart } from "./Charts/ExpenseBreakdownChart";
 import { IncomeBreakdownChart } from "./Charts/IncomeBreakdownChart";
 import { IncomeVsExpenseChart } from "./Charts/IncomeVsExpenseChart";
@@ -22,8 +23,8 @@ import {
   TrendingUp,
   TrendingDown,
   Wallet,
-  Loader2,
   Download,
+  Loader2,
 } from "lucide-react";
 
 export function MonthDetail() {
@@ -49,11 +50,7 @@ export function MonthDetail() {
   };
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-8 h-8 animate-spin text-emerald-400" />
-      </div>
-    );
+    return <MonthDetailSkeleton />;
   }
 
   if (!month) {

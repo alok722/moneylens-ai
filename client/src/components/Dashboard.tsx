@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useApp } from "@/context/AppContext";
 import { MonthCard } from "./MonthCard";
 import { OverviewInsightsCard } from "./AIInsights/OverviewInsightsCard";
+import { DashboardSkeleton } from "./Skeletons/DashboardSkeleton";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import {
@@ -26,12 +27,12 @@ import { exportYearToExcel } from "@/utils/excelExport";
 import { toast } from "sonner";
 import {
   Plus,
-  Loader2,
   TrendingUp,
   TrendingDown,
   Wallet,
   CalendarIcon,
   Download,
+  Loader2,
 } from "lucide-react";
 
 const MONTHS = [
@@ -122,11 +123,7 @@ export function Dashboard() {
   const netBalance = totalIncome - totalExpense;
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-8 h-8 animate-spin text-emerald-400" />
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
   return (

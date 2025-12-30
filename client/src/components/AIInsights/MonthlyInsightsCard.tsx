@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { InsightItem } from "./InsightItem";
+import { MonthlyInsightsSkeleton } from "@/components/Skeletons/InsightsSkeleton";
 import {
   RefreshCw,
   Loader2,
@@ -75,11 +76,7 @@ export function MonthlyInsightsCard({
   };
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-16">
-        <Loader2 className="w-8 h-8 animate-spin text-emerald-400" />
-      </div>
-    );
+    return <MonthlyInsightsSkeleton />;
   }
 
   if (error) {
