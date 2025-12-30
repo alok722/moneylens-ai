@@ -133,6 +133,8 @@ Visit [http://localhost:3000](http://localhost:3000)
 - [x] ~~📱 Responsive Design~~
 - [x] ~~🔔 Toast Notifications~~
 - [x] ~~💾 24-Hour AI Cache Management~~
+
+- [ ] 🤖 Custom AI Model Integration
 - [ ] 📊 Budget planning with alerts
 - [ ] 📅 Bill reminders and due dates
 - [ ] 📁 Receipt attachments
