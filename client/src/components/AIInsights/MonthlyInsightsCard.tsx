@@ -32,7 +32,17 @@ export function MonthlyInsightsCard({
   const [isLoading, setIsLoading] = useState(true);
   const [isRegenerating, setIsRegenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showComparisons, setShowComparisons] = useState(true);
+  
+  // Initialize from localStorage, default to true (expanded)
+  const [showComparisons, setShowComparisons] = useState(() => {
+    const saved = localStorage.getItem("monthlyInsightsComparisonsExpanded");
+    return saved !== null ? JSON.parse(saved) : true;
+  });
+
+  // Save to localStorage whenever collapse state changes
+  useEffect(() => {
+    localStorage.setItem("monthlyInsightsComparisonsExpanded", JSON.stringify(showComparisons));
+  }, [showComparisons]);
 
   useEffect(() => {
     loadInsights();

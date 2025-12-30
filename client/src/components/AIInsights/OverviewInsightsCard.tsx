@@ -23,7 +23,17 @@ export function OverviewInsightsCard({ userId }: OverviewInsightsCardProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [isRegenerating, setIsRegenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isExpanded, setIsExpanded] = useState(true);
+  
+  // Initialize from localStorage, default to true (expanded)
+  const [isExpanded, setIsExpanded] = useState(() => {
+    const saved = localStorage.getItem("overviewInsightsExpanded");
+    return saved !== null ? JSON.parse(saved) : true;
+  });
+
+  // Save to localStorage whenever collapse state changes
+  useEffect(() => {
+    localStorage.setItem("overviewInsightsExpanded", JSON.stringify(isExpanded));
+  }, [isExpanded]);
 
   useEffect(() => {
     loadInsights();
