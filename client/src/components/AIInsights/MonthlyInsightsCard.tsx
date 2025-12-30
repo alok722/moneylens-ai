@@ -118,7 +118,7 @@ export function MonthlyInsightsCard({
           disabled={isRegenerating}
           variant="outline"
           size="sm"
-          className="border-slate-600 hover:bg-slate-700"
+          className="bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border-slate-600 hover:border-slate-500 transition-all"
         >
           {isRegenerating ? (
             <Loader2 className="w-4 h-4 animate-spin mr-2" />

@@ -22,6 +22,8 @@ import {
 } from "@/components/ui/dialog";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatCurrency } from "@/utils/calculations";
+import { exportYearToExcel } from "@/utils/excelExport";
+import { toast } from "sonner";
 import {
   Plus,
   Loader2,
@@ -29,6 +31,7 @@ import {
   TrendingDown,
   Wallet,
   CalendarIcon,
+  Download,
 } from "lucide-react";
 
 const MONTHS = [
@@ -60,6 +63,7 @@ export function Dashboard() {
   const [isCreating, setIsCreating] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [error, setError] = useState("");
+  const [isExporting, setIsExporting] = useState(false);
 
   const handleCreateMonth = async () => {
     if (!selectedYear || !selectedMonth) return;
@@ -74,6 +78,24 @@ export function Dashboard() {
       setError(err.message || "Failed to create month");
     } finally {
       setIsCreating(false);
+    }
+  };
+
+  const handleExportYear = async (year: number) => {
+    const yearMonths = monthsByYear[year];
+    if (!yearMonths || yearMonths.length === 0) {
+      toast.error("No data to export for this year");
+      return;
+    }
+
+    setIsExporting(true);
+    try {
+      const filename = await exportYearToExcel(yearMonths, year, currency);
+      toast.success(`Excel file "${filename}" downloaded successfully`);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to export data");
+    } finally {
+      setIsExporting(false);
     }
   };
 
@@ -93,7 +115,10 @@ export function Dashboard() {
     .sort((a, b) => b - a);
 
   const totalIncome = (months || []).reduce((sum, m) => sum + m.totalIncome, 0);
-  const totalExpense = (months || []).reduce((sum, m) => sum + m.totalExpense, 0);
+  const totalExpense = (months || []).reduce(
+    (sum, m) => sum + m.totalExpense,
+    0
+  );
   const netBalance = totalIncome - totalExpense;
 
   if (isLoading) {
@@ -319,6 +344,19 @@ export function Dashboard() {
               <div className="flex items-center gap-3">
                 <h2 className="text-2xl font-bold text-white">{year}</h2>
                 <div className="h-px flex-1 bg-gradient-to-r from-slate-700 to-transparent"></div>
+                <Button
+                  onClick={() => handleExportYear(year)}
+                  disabled={isExporting}
+                  size="sm"
+                  className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white"
+                >
+                  {isExporting ? (
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  ) : (
+                    <Download className="w-4 h-4 mr-2" />
+                  )}
+                  Export {year}
+                </Button>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {monthsByYear[year]

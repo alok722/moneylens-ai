@@ -1,6 +1,9 @@
+import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useApp } from "@/context/AppContext";
 import { formatCurrency } from "@/utils/calculations";
+import { exportMonthToExcel } from "@/utils/excelExport";
+import { toast } from "sonner";
 import { IncomeSection } from "./IncomeSection";
 import { ExpenseSection } from "./ExpenseSection";
 import { MonthlyInsightsCard } from "./AIInsights/MonthlyInsightsCard";
@@ -20,14 +23,30 @@ import {
   TrendingDown,
   Wallet,
   Loader2,
+  Download,
 } from "lucide-react";
 
 export function MonthDetail() {
   const { monthId } = useParams<{ monthId: string }>();
   const navigate = useNavigate();
   const { months, isLoading, currency, user } = useApp();
+  const [isExporting, setIsExporting] = useState(false);
 
   const month = months.find((m) => m._id === monthId);
+
+  const handleExportMonth = async () => {
+    if (!month) return;
+
+    setIsExporting(true);
+    try {
+      const filename = await exportMonthToExcel(month, currency);
+      toast.success(`Excel file "${filename}" downloaded successfully`);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to export data");
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -67,10 +86,22 @@ export function MonthDetail() {
         >
           <ArrowLeft className="w-5 h-5" />
         </Button>
-        <div>
+        <div className="flex-1">
           <h1 className="text-3xl font-bold text-white">{month.monthName}</h1>
           <p className="text-slate-400">Manage your income and expenses</p>
         </div>
+        <Button
+          onClick={handleExportMonth}
+          disabled={isExporting}
+          className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white"
+        >
+          {isExporting ? (
+            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+          ) : (
+            <Download className="w-4 h-4 mr-2" />
+          )}
+          Export
+        </Button>
       </div>
 
       {/* Summary Cards */}

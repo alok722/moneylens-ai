@@ -57,7 +57,7 @@ A modern, full-stack expense tracking web application with AI-powered insights. 
 - **Profile Management** - Update display name and currency preferences
 - **Edit Capabilities** - Modify individual entries (amount, note, tag)
 - **Bulk Delete** - Remove entire categories with confirmation
-- **Export Ready** - Structured data for future export features
+- **Excel Export** - Download financial data in Excel format with professional formatting
 - **Empty States** - Helpful guidance when no data exists
 
 ## 🚀 Quick Start
@@ -156,6 +156,7 @@ yarn dev
 - **Sort**: Click table headers to sort by category or amount
 - **Edit**: Click edit icon to modify individual entries
 - **Delete**: Click delete icon with confirmation for safe removal
+- **Export**: Download Excel files from Dashboard (full year) or Month Detail (single month)
 
 ## 🏗️ Tech Stack
 
@@ -226,20 +227,36 @@ Rent • EMIs • Groceries • Shopping • Food & Drinks • Credit Card • B
 - `POST /api/insights/regenerate/overview` - Refresh overview
 - `POST /api/insights/regenerate/month/:id` - Refresh monthly
 
-## 🎯 Roadmap
+## 🎯 Planned Features
 
-### Planned Features
-
-- 📊 Budget planning with alerts
-- 📅 Bill reminders and due dates
-- 📁 Receipt attachments
-- 📈 Year-over-year comparisons
-- 💾 Data export (CSV/PDF)
-- 📱 Mobile app (iOS/Android)
-- 🔄 Bank integration
-- 👥 Shared/Family accounts
-- 🎮 Gamification (achievements, streaks)
-- 🌐 Multi-currency with live conversion
+- [x] ~~🔐 User Authentication & Security~~
+- [x] ~~💰 Multi-Period Financial Tracking~~
+- [x] ~~📊 Interactive Charts & Visualizations~~
+- [x] ~~🤖 AI-Powered Insights with Gemini~~
+- [x] ~~🏷️ Need/Want/Neutral Expense Tagging~~
+- [x] ~~🔄 Recurring Expenses Management~~
+- [x] ~~👤 Profile & Account Management~~
+- [x] ~~💱 Multi-Currency Support (INR/USD)~~
+- [x] ~~📝 Entry-Based Transaction System~~
+- [x] ~~🔍 Search, Sort & Filter Capabilities~~
+- [x] ~~✏️ Edit Individual Entries~~
+- [x] ~~🗑️ Bulk Delete with Confirmation~~
+- [x] ~~📤 Excel Export (Year & Month views)~~
+- [x] ~~🌙 Dark Mode Interface~~
+- [x] ~~📱 Responsive Design~~
+- [x] ~~🔔 Toast Notifications~~
+- [x] ~~💾 24-Hour AI Cache Management~~
+- [ ] 📊 Budget planning with alerts
+- [ ] 📅 Bill reminders and due dates
+- [ ] 📁 Receipt attachments
+- [ ] 📈 Year-over-year comparisons
+- [ ] 📱 Mobile app (iOS/Android)
+- [ ] 👥 Shared/Family accounts
+- [ ] 🎮 Gamification (achievements, streaks)
+- [ ] 📊 Custom category creation
+- [ ] 🔔 Email notifications
+- [ ] 🌍 Multi-language support
+- [ ] 📊 Investment portfolio tracking
 
 ## 💡 Contributing
 

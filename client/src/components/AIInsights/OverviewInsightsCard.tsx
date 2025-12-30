@@ -1,6 +1,9 @@
 import { useState, useEffect } from "react";
 import { OverviewInsights } from "@/types";
-import { fetchOverviewInsights, regenerateOverviewInsights } from "@/services/api";
+import {
+  fetchOverviewInsights,
+  regenerateOverviewInsights,
+} from "@/services/api";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { InsightItem } from "./InsightItem";
@@ -23,7 +26,7 @@ export function OverviewInsightsCard({ userId }: OverviewInsightsCardProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [isRegenerating, setIsRegenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+
   // Initialize from localStorage, default to true (expanded)
   const [isExpanded, setIsExpanded] = useState(() => {
     const saved = localStorage.getItem("overviewInsightsExpanded");
@@ -32,7 +35,10 @@ export function OverviewInsightsCard({ userId }: OverviewInsightsCardProps) {
 
   // Save to localStorage whenever collapse state changes
   useEffect(() => {
-    localStorage.setItem("overviewInsightsExpanded", JSON.stringify(isExpanded));
+    localStorage.setItem(
+      "overviewInsightsExpanded",
+      JSON.stringify(isExpanded)
+    );
   }, [isExpanded]);
 
   useEffect(() => {
@@ -117,7 +123,8 @@ export function OverviewInsightsCard({ userId }: OverviewInsightsCardProps) {
               </h2>
               <p className="text-sm text-slate-400 mt-1">
                 Generated {new Date(insights.generatedAt).toLocaleDateString()}
-                {!isExpanded && ` • Score: ${insights.financialHealthScore}/100`}
+                {!isExpanded &&
+                  ` • Score: ${insights.financialHealthScore}/100`}
               </p>
             </div>
           </button>
@@ -126,7 +133,7 @@ export function OverviewInsightsCard({ userId }: OverviewInsightsCardProps) {
             disabled={isRegenerating}
             variant="outline"
             size="sm"
-            className="border-slate-600 hover:bg-slate-700 flex-shrink-0"
+            className="bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border-slate-600 hover:border-slate-500 transition-all flex-shrink-0"
           >
             {isRegenerating ? (
               <Loader2 className="w-4 h-4 animate-spin mr-2" />
@@ -201,4 +208,3 @@ export function OverviewInsightsCard({ userId }: OverviewInsightsCardProps) {
     </Card>
   );
 }
-
