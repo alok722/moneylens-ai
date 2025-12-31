@@ -2,7 +2,7 @@ echo "🔍 Running pre-commit checks..."
 
 # Run full lint on client and server
 echo "📝 Running linters..."
-cd client && yarn lint && cd ../server && yarn lint && cd ..
+yarn lint
 
 # Run lint-staged for auto-fixing staged files
 echo "🔧 Auto-fixing staged files..."
@@ -10,6 +10,6 @@ npx lint-staged
 
 # Run server tests
 echo "🧪 Running server tests..."
-cd server && yarn test:e2e && cd ..
+yarn test:e2e
 
 echo "✅ All pre-commit checks passed!"
