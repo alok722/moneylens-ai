@@ -42,10 +42,10 @@ export function MonthTrendChart({ months }: MonthTrendChartProps) {
     return a.month - b.month;
   });
 
-  // Take last 6 months for better visualization
-  const recentMonths = sortedMonths.slice(-6);
+  // Use all months for the year (instead of limiting to 6)
+  const displayMonths = sortedMonths;
 
-  if (recentMonths.length === 0) {
+  if (displayMonths.length === 0) {
     return (
       <div className="flex items-center justify-center h-64 text-slate-500">
         No data available
@@ -54,7 +54,7 @@ export function MonthTrendChart({ months }: MonthTrendChartProps) {
   }
 
   const chartData = {
-    labels: recentMonths.map((m) => {
+    labels: displayMonths.map((m) => {
       const monthNames = [
         "Jan",
         "Feb",
@@ -74,7 +74,7 @@ export function MonthTrendChart({ months }: MonthTrendChartProps) {
     datasets: [
       {
         label: "Income",
-        data: recentMonths.map((m) => m.totalIncome),
+        data: displayMonths.map((m) => m.totalIncome),
         borderColor: "#10b981", // emerald-500
         backgroundColor: "rgba(16, 185, 129, 0.1)",
         borderWidth: 3,
@@ -88,7 +88,7 @@ export function MonthTrendChart({ months }: MonthTrendChartProps) {
       },
       {
         label: "Expenses",
-        data: recentMonths.map((m) => m.totalExpense),
+        data: displayMonths.map((m) => m.totalExpense),
         borderColor: "#ef4444", // red-500
         backgroundColor: "rgba(239, 68, 68, 0.1)",
         borderWidth: 3,
@@ -102,7 +102,7 @@ export function MonthTrendChart({ months }: MonthTrendChartProps) {
       },
       {
         label: "Carry Forward",
-        data: recentMonths.map((m) => m.carryForward),
+        data: displayMonths.map((m) => m.carryForward),
         borderColor: "#3b82f6", // blue-500
         backgroundColor: "rgba(59, 130, 246, 0.1)",
         borderWidth: 3,

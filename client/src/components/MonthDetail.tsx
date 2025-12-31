@@ -11,9 +11,7 @@ import { MonthDetailSkeleton } from "./Skeletons/MonthDetailSkeleton";
 import { ExpenseBreakdownChart } from "./Charts/ExpenseBreakdownChart";
 import { IncomeBreakdownChart } from "./Charts/IncomeBreakdownChart";
 import { IncomeVsExpenseChart } from "./Charts/IncomeVsExpenseChart";
-import { CarryForwardTrendChart } from "./Charts/CarryForwardTrendChart";
 import { NeedWantNeutralChart } from "./Charts/NeedWantNeutralChart";
-import { MonthTrendChart } from "./Charts/MonthTrendChart";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -263,27 +261,6 @@ export function MonthDetail() {
               </CardContent>
             </Card>
           </div>
-
-          <Card className="bg-slate-800/50 border-slate-700/50">
-            <CardContent className="p-6">
-              <h3 className="text-lg font-semibold text-white mb-4">
-                Month-over-Month Trends
-              </h3>
-              <MonthTrendChart months={months} />
-            </CardContent>
-          </Card>
-
-          <Card className="bg-slate-800/50 border-slate-700/50">
-            <CardContent className="p-6">
-              <h3 className="text-lg font-semibold text-white mb-4">
-                Carry Forward Trend
-              </h3>
-              <CarryForwardTrendChart
-                months={months}
-                currentMonthId={month._id}
-              />
-            </CardContent>
-          </Card>
         </TabsContent>
 
         <TabsContent value="ai-insights">

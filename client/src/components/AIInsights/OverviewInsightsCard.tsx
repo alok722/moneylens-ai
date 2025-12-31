@@ -209,15 +209,15 @@ export function OverviewInsightsCard({ userId }: OverviewInsightsCardProps) {
             onClick={handleRegenerate}
             disabled={isRegenerating}
             variant="outline"
-            size="sm"
+            size="icon"
             className="bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border-slate-600 hover:border-slate-500 transition-all flex-shrink-0"
+            title="Refresh insights"
           >
             {isRegenerating ? (
-              <Loader2 className="w-4 h-4 animate-spin mr-2" />
+              <Loader2 className="w-4 h-4 animate-spin" />
             ) : (
-              <RefreshCw className="w-4 h-4 mr-2" />
+              <RefreshCw className="w-4 h-4" />
             )}
-            Refresh
           </Button>
         </div>
 

@@ -25,7 +25,7 @@ ChartJS.register(
 
 interface CarryForwardTrendChartProps {
   months: MonthData[];
-  currentMonthId: string;
+  currentMonthId?: string;
 }
 
 export function CarryForwardTrendChart({
@@ -40,14 +40,22 @@ export function CarryForwardTrendChart({
     );
   }
 
-  const currentIndex = (months || []).findIndex((m) => m._id === currentMonthId);
+  // Sort months chronologically
+  const sortedMonths = [...(months || [])].sort((a, b) => {
+    if (a.year !== b.year) return a.year - b.year;
+    return a.month - b.month;
+  });
+
+  const currentIndex = currentMonthId 
+    ? sortedMonths.findIndex((m) => m._id === currentMonthId)
+    : -1;
 
   const data = {
-    labels: (months || []).map((m) => m.monthName),
+    labels: sortedMonths.map((m) => m.monthName),
     datasets: [
       {
         label: "Carry Forward",
-        data: (months || []).map((m) => m.carryForward),
+        data: sortedMonths.map((m) => m.carryForward),
         fill: true,
         backgroundColor: (context: {
           chart: { ctx: CanvasRenderingContext2D };
@@ -61,14 +69,14 @@ export function CarryForwardTrendChart({
         borderColor: "rgb(52, 211, 153)",
         borderWidth: 3,
         tension: 0.4,
-        pointBackgroundColor: (months || []).map((_, i) =>
+        pointBackgroundColor: sortedMonths.map((_, i) =>
           i === currentIndex ? "rgb(52, 211, 153)" : "rgba(52, 211, 153, 0.5)"
         ),
-        pointBorderColor: (months || []).map((_, i) =>
+        pointBorderColor: sortedMonths.map((_, i) =>
           i === currentIndex ? "rgb(255, 255, 255)" : "rgb(52, 211, 153)"
         ),
-        pointBorderWidth: (months || []).map((_, i) => (i === currentIndex ? 3 : 1)),
-        pointRadius: (months || []).map((_, i) => (i === currentIndex ? 8 : 4)),
+        pointBorderWidth: sortedMonths.map((_, i) => (i === currentIndex ? 3 : 1)),
+        pointRadius: sortedMonths.map((_, i) => (i === currentIndex ? 8 : 4)),
         pointHoverRadius: 8,
       },
     ],
