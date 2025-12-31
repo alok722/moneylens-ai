@@ -11,7 +11,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Wallet, Loader2, ArrowLeft } from "lucide-react";
+import { Loader2, ArrowLeft } from "lucide-react";
+import { Logo } from "@/components/shared/Logo";
 
 export function Login() {
   const [username, setUsername] = useState("");
@@ -50,13 +51,10 @@ export function Login() {
 
       <Card className="w-full max-w-md relative z-10 bg-slate-800/80 border-slate-700 backdrop-blur-sm">
         <CardHeader className="text-center space-y-4">
-          <div className="mx-auto w-16 h-16 bg-gradient-to-br from-emerald-400 to-cyan-500 rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-500/20">
-            <Wallet className="w-8 h-8 text-white" />
+          <div className="mx-auto flex justify-center">
+            <Logo size="md" />
           </div>
           <div>
-            <CardTitle className="text-2xl font-bold text-white">
-              MoneyLens.ai
-            </CardTitle>
             <CardDescription className="text-slate-400">
               Sign in to manage your finances
             </CardDescription>

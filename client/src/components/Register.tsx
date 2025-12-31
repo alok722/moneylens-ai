@@ -19,12 +19,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  Wallet,
   Loader2,
   ArrowLeft,
   AlertTriangle,
   ShieldCheck,
 } from "lucide-react";
+import { Logo } from "@/components/shared/Logo";
 import { SECURITY_QUESTIONS } from "@/constants/securityQuestions";
 
 export function Register() {
@@ -95,12 +95,8 @@ export function Register() {
 
       <Card className="w-full max-w-md relative z-10 bg-slate-800/80 border-slate-700 backdrop-blur-sm">
         <CardHeader className="text-center space-y-4">
-          <div className="mx-auto w-16 h-16 bg-gradient-to-br from-emerald-400 to-cyan-500 rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-500/20">
-            {step === 1 ? (
-              <Wallet className="w-8 h-8 text-white" />
-            ) : (
-              <ShieldCheck className="w-8 h-8 text-white" />
-            )}
+          <div className="mx-auto flex justify-center">
+            <Logo size="md" />
           </div>
           <div>
             <CardTitle className="text-2xl font-bold text-white">

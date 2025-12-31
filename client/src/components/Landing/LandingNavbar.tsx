@@ -1,7 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Wallet, LayoutDashboard } from "lucide-react";
+import { LayoutDashboard } from "lucide-react";
 import { motion } from "framer-motion";
+import { Logo } from "@/components/shared/Logo";
 
 interface LandingNavbarProps {
   user: { name?: string; username: string } | null;
@@ -20,16 +21,10 @@ export function LandingNavbar({ user }: LandingNavbarProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <motion.div
-            className="flex items-center gap-3"
             whileHover={{ scale: 1.05 }}
             transition={{ duration: 0.2 }}
           >
-            <div className="w-10 h-10 bg-gradient-to-br from-emerald-400 to-cyan-500 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20">
-              <Wallet className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
-              MoneyLens.ai
-            </span>
+            <Logo size="md" />
           </motion.div>
           <div className="flex gap-3">
             {user ? (
