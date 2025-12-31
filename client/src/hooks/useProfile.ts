@@ -3,7 +3,7 @@ import { AuthUser } from "@/types";
 import * as api from "@/services/api";
 import { toast } from "sonner";
 
-const USER_STORAGE_KEY = "expense-tracker-user";
+const USER_STORAGE_KEY = "moneylens-user";
 
 export function useProfile(user: AuthUser | null, setUser: (user: AuthUser) => void) {
   const [isLoading, setIsLoading] = useState(false);

@@ -1,12 +1,13 @@
-# E2E Test Suite for Expense Tracker
+# E2E Test Suite for MoneyLens.ai
 
 ## Overview
 
-This comprehensive End-to-End test suite ensures the accuracy and reliability of all calculations in the Expense Tracker application. Since this is a financial application, calculation precision is critical.
+This comprehensive End-to-End test suite ensures the accuracy and reliability of all calculations in the MoneyLens.ai application. Since this is a financial application, calculation precision is critical.
 
 ## What's Tested
 
 ### 1. **Authentication**
+
 - User registration with validation
 - Setting and updating security questions
 - Retrieving security questions by username
@@ -17,12 +18,14 @@ This comprehensive End-to-End test suite ensures the accuracy and reliability of
 - Security answer validation
 
 ### 2. **Month Data Management**
+
 - Creating new months
 - Preventing duplicate months
 - Fetching months (all and by ID)
 - Error handling for non-existent months
 
 ### 3. **Income Operations with Calculation Verification**
+
 - Adding income entries to new categories
 - Adding multiple entries to existing categories
 - Updating income entries
@@ -31,6 +34,7 @@ This comprehensive End-to-End test suite ensures the accuracy and reliability of
 - **Critical**: Verifying that totalIncome = sum of all category amounts
 
 ### 4. **Expense Operations with Tag Verification**
+
 - Adding expenses with different tags (need, want, neutral)
 - Multiple entries per category
 - Updating expense entries including tag changes
@@ -39,6 +43,7 @@ This comprehensive End-to-End test suite ensures the accuracy and reliability of
 - **Critical**: Verifying tag-based categorization
 
 ### 5. **Complex Calculation Scenarios**
+
 - Multiple simultaneous operations
 - Decimal/float amount handling
 - Large number handling
@@ -46,15 +51,18 @@ This comprehensive End-to-End test suite ensures the accuracy and reliability of
 - **Critical**: carryForward = totalIncome - totalExpense
 
 ### 6. **Recurring Expenses**
+
 - Create, Read, Update, Delete (CRUD) operations
 - Validation of recurring expense properties
 
 ### 7. **Carry Forward Between Months**
+
 - Proper carry forward from previous month
 - Independent calculations per month
 - Carry forward as income entry in new month
 
 ### 8. **Edge Cases**
+
 - Zero amounts
 - Large numbers (9,999,999.99)
 - Missing required fields
@@ -106,7 +114,7 @@ yarn test --coverage
 
 ```
 PASS  src/__tests__/e2e.test.ts
-  E2E Tests - Expense Tracker API with Calculation Verification
+  E2E Tests - MoneyLens.ai API with Calculation Verification
     Authentication
       ✓ should register a new user
       ✓ should login with valid credentials
@@ -130,6 +138,7 @@ PASS  src/__tests__/e2e.test.ts
 If a calculation test fails, check:
 
 1. **Service Layer Logic**: `src/services/MonthDataService.ts`
+
    - Look at `recalculateMonth()` method
    - Verify entry addition/deletion logic
 
@@ -165,6 +174,7 @@ yarn test -t "Income Operations"
 ## CI/CD Integration
 
 These tests should be run:
+
 - Before every commit (pre-commit hook)
 - On every pull request
 - Before deployment to production
@@ -175,4 +185,3 @@ These tests should be run:
 - Keep test data realistic but minimal
 - Document any test-specific configuration
 - Review and update this README as tests evolve
-

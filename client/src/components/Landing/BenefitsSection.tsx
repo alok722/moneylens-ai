@@ -48,7 +48,7 @@ export function BenefitsSection() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <motion.div variants={fadeInUp}>
             <h2 className="text-3xl sm:text-4xl font-bold text-white mb-6">
-              Why choose ExpenseTracker?
+              Why choose MoneyLens.ai?
             </h2>
             <p className="text-lg text-slate-400 mb-8">
               Join thousands of users who have taken control of their financial
@@ -112,4 +112,3 @@ export function BenefitsSection() {
     </motion.div>
   );
 }
-

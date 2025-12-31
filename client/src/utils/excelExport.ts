@@ -256,7 +256,7 @@ export async function exportMonthToExcel(
   currency: "USD" | "INR" = "INR"
 ) {
   const workbook = new ExcelJS.Workbook();
-  workbook.creator = "Expense Tracker Dashboard";
+  workbook.creator = "MoneyLens.ai";
   workbook.created = new Date();
 
   const worksheet = workbook.addWorksheet(monthData.monthName);
@@ -294,7 +294,7 @@ export async function exportYearToExcel(
   }
 
   const workbook = new ExcelJS.Workbook();
-  workbook.creator = "Expense Tracker Dashboard";
+  workbook.creator = "MoneyLens.ai";
   workbook.created = new Date();
 
   // Sort months chronologically

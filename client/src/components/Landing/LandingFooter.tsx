@@ -10,12 +10,12 @@ export function LandingFooter() {
               <Wallet className="w-4 h-4 text-white" />
             </div>
             <span className="text-lg font-semibold bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
-              ExpenseTracker
+              MoneyLens.ai
             </span>
           </div>
           <div className="flex flex-col items-center md:items-end gap-2">
             <p className="text-slate-500 text-sm">
-              © 2025 ExpenseTracker. All rights reserved.
+              © 2025 MoneyLens.ai. All rights reserved.
             </p>
             <p className="text-slate-500 text-sm">
               Vibe coded with ❤️ by{" "}

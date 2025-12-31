@@ -4,7 +4,7 @@ import app from "../index";
 import { User, MonthData, RecurringExpense } from "../models";
 import { connectDatabase, disconnectDatabase } from "../config/database";
 
-describe("E2E Tests - Expense Tracker API with Calculation Verification", () => {
+describe("E2E Tests - MoneyLens.ai API with Calculation Verification", () => {
   let userId: string;
   let monthId: string;
   let recurringId: string;

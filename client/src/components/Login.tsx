@@ -55,7 +55,7 @@ export function Login() {
           </div>
           <div>
             <CardTitle className="text-2xl font-bold text-white">
-              Expense Tracker
+              MoneyLens.ai
             </CardTitle>
             <CardDescription className="text-slate-400">
               Sign in to manage your finances

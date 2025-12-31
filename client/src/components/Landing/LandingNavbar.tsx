@@ -28,7 +28,7 @@ export function LandingNavbar({ user }: LandingNavbarProps) {
               <Wallet className="w-5 h-5 text-white" />
             </div>
             <span className="text-xl font-bold bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
-              ExpenseTracker
+              MoneyLens.ai
             </span>
           </motion.div>
           <div className="flex gap-3">

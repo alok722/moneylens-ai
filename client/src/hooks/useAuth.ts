@@ -2,7 +2,7 @@ import { useState, useCallback } from "react";
 import { AuthUser } from "@/types";
 import * as api from "@/services/api";
 
-const USER_STORAGE_KEY = "expense-tracker-user";
+const USER_STORAGE_KEY = "moneylens-user";
 
 export function useAuth() {
   const [user, setUser] = useState<AuthUser | null>(() => {

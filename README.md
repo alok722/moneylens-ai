@@ -1,4 +1,4 @@
-# Expense Tracker Dashboard
+# MoneyLens.ai
 
 Take control of your finances with AI-powered insights. Track income, manage expenses, and make smarter money decisions—all in one beautiful dashboard.
 
@@ -52,7 +52,7 @@ Take control of your finances with AI-powered insights. Track income, manage exp
 
 ```bash
 git clone <repository-url>
-cd expense-tracker-dashboard
+cd moneylens-ai
 yarn install
 ```
 
