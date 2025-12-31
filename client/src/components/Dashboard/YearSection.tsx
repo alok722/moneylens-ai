@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { MonthTrendChart } from "@/components/Charts/MonthTrendChart";
 import { CarryForwardTrendChart } from "@/components/Charts/CarryForwardTrendChart";
+import { InvestmentTrendChart } from "@/components/Charts/InvestmentTrendChart";
 import { Download, Loader2 } from "lucide-react";
 import { MonthData } from "@/types";
 
@@ -65,6 +66,15 @@ export function YearSection({
               Carry Forward Trend
             </h3>
             <CarryForwardTrendChart months={months} />
+          </CardContent>
+        </Card>
+
+        <Card className="bg-slate-800/50 border-slate-700/50">
+          <CardContent className="p-6">
+            <h3 className="text-lg font-semibold text-white mb-4">
+              Investment Trend
+            </h3>
+            <InvestmentTrendChart months={months} />
           </CardContent>
         </Card>
       </div>
