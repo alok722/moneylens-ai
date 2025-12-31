@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { Analytics } from '@vercel/analytics/react';
 import { AppProvider } from '@/context/AppContext';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { Toaster } from '@/components/ui/sonner';
@@ -34,6 +35,7 @@ function App() {
         </BrowserRouter>
       </TooltipProvider>
       <Toaster />
+      <Analytics />
     </AppProvider>
   );
 }
