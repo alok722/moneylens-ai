@@ -1,17 +1,17 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { Analytics } from '@vercel/analytics/react';
-import { AppProvider } from '@/context/AppContext';
-import { TooltipProvider } from '@/components/ui/tooltip';
-import { Toaster } from '@/components/ui/sonner';
-import { LandingPage } from '@/components/LandingPage';
-import { Login } from '@/components/Login';
-import { Register } from '@/components/Register';
-import { ForgotPassword } from '@/components/ForgotPassword';
-import { Dashboard } from '@/components/Dashboard';
-import { MonthDetail } from '@/components/MonthDetail';
-import { Profile } from '@/components/Profile';
-import { Layout } from '@/components/Layout/Layout';
-import { ProtectedRoute } from '@/components/Layout/ProtectedRoute';
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { Analytics } from "@vercel/analytics/react";
+import { AppProvider } from "@/context/AppContext";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { Toaster } from "@/components/ui/sonner";
+import { LandingPage } from "@/components/LandingPage";
+import { Login } from "@/components/Login";
+import { Register } from "@/components/Register";
+import { ForgotPassword } from "@/components/ForgotPassword";
+import { Dashboard } from "@/components/Dashboard";
+import { MonthDetail } from "@/components/MonthDetail";
+import { Profile } from "@/components/Profile";
+import { Layout } from "@/components/Layout/Layout";
+import { ProtectedRoute } from "@/components/Layout/ProtectedRoute";
 
 function App() {
   return (
