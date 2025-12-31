@@ -25,8 +25,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Info, Pencil, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { Info, Pencil, Trash2, ChevronRight } from "lucide-react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 
 interface BreakdownTooltipProps {
@@ -52,6 +52,7 @@ export function BreakdownTooltip({
 }: BreakdownTooltipProps) {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [editingEntry, setEditingEntry] = useState<
     (IncomeEntry | ExpenseEntry) | null
   >(null);
@@ -64,6 +65,17 @@ export function BreakdownTooltip({
     tag: "neutral" as "need" | "want" | "neutral",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Detect mobile devices
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   if (!entries || entries.length === 0) {
     return <span className="text-slate-500 text-sm italic">No entries</span>;
@@ -144,136 +156,185 @@ export function BreakdownTooltip({
       .join(" + ");
   };
 
+  // Render entry table (shared between tooltip and dialog)
+  const renderEntryTable = () => (
+    <div className="overflow-x-auto">
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="border-b border-slate-700">
+            <th className="text-left py-2 px-3 text-slate-400 font-medium">
+              Description
+            </th>
+            <th className="text-right py-2 px-3 text-slate-400 font-medium">
+              Amount
+            </th>
+            {(onEdit || onDelete) && (
+              <th className="text-right py-2 px-3 text-slate-400 font-medium">
+                Actions
+              </th>
+            )}
+          </tr>
+        </thead>
+        <tbody className="max-h-64 overflow-y-auto">
+          {entries.map((entry, index) => (
+            <tr
+              key={entry.id || index}
+              className="border-b border-slate-700/50 last:border-0 hover:bg-slate-700/30"
+            >
+              <td className="py-2 px-3 text-slate-200">
+                <div className="flex items-center gap-2">
+                  {type === "expense" && hasTag(entry) && (
+                    <span className="text-base leading-none">
+                      {entry.tag === "need"
+                        ? "🔴"
+                        : entry.tag === "want"
+                        ? "🟡"
+                        : "⚪"}
+                    </span>
+                  )}
+                  <span>{entry.note || "No note"}</span>
+                </div>
+              </td>
+              <td
+                className={`py-2 px-3 text-right font-mono font-semibold ${
+                  type === "income"
+                    ? "text-emerald-400"
+                    : "text-red-400"
+                }`}
+              >
+                {formatCurrency(entry.amount, currency)}
+              </td>
+              {(onEdit || onDelete) && (
+                <td className="py-2 px-3 text-right">
+                  <div className="flex gap-1 justify-end">
+                    {onEdit && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEdit(entry);
+                        }}
+                        className="p-1.5 hover:bg-blue-500/20 text-blue-400 rounded transition-colors"
+                        title="Edit entry"
+                      >
+                        <Pencil className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                    {onDelete && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setDeletingEntry(entry);
+                          setDeleteDialogOpen(true);
+                        }}
+                        className="p-1.5 hover:bg-red-500/20 text-red-400 rounded transition-colors"
+                        title="Delete entry"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
+                </td>
+              )}
+            </tr>
+          ))}
+        </tbody>
+        <tfoot className="border-t border-slate-600 bg-slate-800/50">
+          <tr>
+            <td
+              colSpan={1 + (onEdit || onDelete ? 1 : 0)}
+              className="py-2 px-3 text-slate-400 font-medium text-xs"
+            >
+              Total ({entries.length}{" "}
+              {entries.length === 1 ? "entry" : "entries"})
+            </td>
+            <td
+              className={`py-2 px-3 text-right font-mono font-bold ${
+                type === "income"
+                  ? "text-emerald-400"
+                  : "text-red-400"
+              }`}
+            >
+              {formatCurrency(
+                entries.reduce((sum, entry) => sum + entry.amount, 0),
+                currency
+              )}
+            </td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  );
+
   return (
     <>
-      <TooltipProvider>
-        <Tooltip delayDuration={200}>
-          <TooltipTrigger asChild>
-            <div className="flex items-center gap-2 cursor-help group">
-              <span className="text-slate-400 font-mono text-sm break-words">
-                {formatBreakdown(entries)}
-              </span>
-              <Info className="w-3.5 h-3.5 text-slate-500 group-hover:text-slate-400 transition-colors flex-shrink-0" />
-            </div>
-          </TooltipTrigger>
-          <TooltipContent
-            side="bottom"
-            align="start"
-            className="max-w-2xl p-0 bg-slate-800 border-slate-600 shadow-xl"
-          >
-            <div className="p-4">
-              <div className="text-xs font-semibold text-slate-300 uppercase tracking-wide mb-3">
-                Transaction Details
+      {/* Mobile: Clickable cell that opens dialog */}
+      {isMobile ? (
+        <button
+          onClick={() => setViewDialogOpen(true)}
+          className="flex items-center gap-2 cursor-pointer hover:bg-slate-700/30 active:bg-slate-700/50 rounded px-2 py-1 -mx-2 -my-1 transition-colors w-full text-left"
+        >
+          <span className="text-slate-400 font-mono text-sm">
+            {entries.length} {entries.length === 1 ? 'entry' : 'entries'}
+          </span>
+          <ChevronRight className="w-4 h-4 text-slate-500 flex-shrink-0" />
+        </button>
+      ) : (
+        // Desktop: Hover tooltip
+        <TooltipProvider>
+          <Tooltip delayDuration={200}>
+            <TooltipTrigger asChild>
+              <div className="flex items-center gap-2 cursor-help group">
+                <span className="text-slate-400 font-mono text-sm break-words">
+                  {formatBreakdown(entries)}
+                </span>
+                <Info className="w-3.5 h-3.5 text-slate-500 group-hover:text-slate-400 transition-colors flex-shrink-0" />
               </div>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-slate-700">
-                      <th className="text-left py-2 px-3 text-slate-400 font-medium">
-                        Description
-                      </th>
-                      <th className="text-right py-2 px-3 text-slate-400 font-medium">
-                        Amount
-                      </th>
-                      {(onEdit || onDelete) && (
-                        <th className="text-right py-2 px-3 text-slate-400 font-medium">
-                          Actions
-                        </th>
-                      )}
-                    </tr>
-                  </thead>
-                  <tbody className="max-h-64 overflow-y-auto">
-                    {entries.map((entry, index) => (
-                      <tr
-                        key={entry.id || index}
-                        className="border-b border-slate-700/50 last:border-0 hover:bg-slate-700/30"
-                      >
-                        <td className="py-2 px-3 text-slate-200">
-                          <div className="flex items-center gap-2">
-                            {type === "expense" && hasTag(entry) && (
-                              <span className="text-base leading-none">
-                                {entry.tag === "need"
-                                  ? "🔴"
-                                  : entry.tag === "want"
-                                  ? "🟡"
-                                  : "⚪"}
-                              </span>
-                            )}
-                            <span>{entry.note || "No note"}</span>
-                          </div>
-                        </td>
-                        <td
-                          className={`py-2 px-3 text-right font-mono font-semibold ${
-                            type === "income"
-                              ? "text-emerald-400"
-                              : "text-red-400"
-                          }`}
-                        >
-                          {formatCurrency(entry.amount, currency)}
-                        </td>
-                        {(onEdit || onDelete) && (
-                          <td className="py-2 px-3 text-right">
-                            <div className="flex gap-1 justify-end">
-                              {onEdit && (
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleEdit(entry);
-                                  }}
-                                  className="p-1.5 hover:bg-blue-500/20 text-blue-400 rounded transition-colors"
-                                  title="Edit entry"
-                                >
-                                  <Pencil className="w-3.5 h-3.5" />
-                                </button>
-                              )}
-                              {onDelete && (
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setDeletingEntry(entry);
-                                    setDeleteDialogOpen(true);
-                                  }}
-                                  className="p-1.5 hover:bg-red-500/20 text-red-400 rounded transition-colors"
-                                  title="Delete entry"
-                                >
-                                  <Trash2 className="w-3.5 h-3.5" />
-                                </button>
-                              )}
-                            </div>
-                          </td>
-                        )}
-                      </tr>
-                    ))}
-                  </tbody>
-                  <tfoot className="border-t border-slate-600 bg-slate-800/50">
-                    <tr>
-                      <td
-                        colSpan={1 + (onEdit || onDelete ? 1 : 0)}
-                        className="py-2 px-3 text-slate-400 font-medium text-xs"
-                      >
-                        Total ({entries.length}{" "}
-                        {entries.length === 1 ? "entry" : "entries"})
-                      </td>
-                      <td
-                        className={`py-2 px-3 text-right font-mono font-bold ${
-                          type === "income"
-                            ? "text-emerald-400"
-                            : "text-red-400"
-                        }`}
-                      >
-                        {formatCurrency(
-                          entries.reduce((sum, entry) => sum + entry.amount, 0),
-                          currency
-                        )}
-                      </td>
-                    </tr>
-                  </tfoot>
-                </table>
+            </TooltipTrigger>
+            <TooltipContent
+              side="bottom"
+              align="start"
+              className="max-w-2xl p-0 bg-slate-800 border-slate-600 shadow-xl"
+            >
+              <div className="p-4">
+                <div className="text-xs font-semibold text-slate-300 uppercase tracking-wide mb-3">
+                  Transaction Details (Click icons to edit/delete)
+                </div>
+                {renderEntryTable()}
               </div>
-            </div>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      )}
+
+      {/* Mobile: View Entries Dialog */}
+      <Dialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>
+        <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-lg">
+          <DialogHeader>
+            <DialogTitle>
+              {type === "income" ? "Income" : "Expense"} Entries
+            </DialogTitle>
+            <DialogDescription className="text-slate-400">
+              {onEdit || onDelete
+                ? "Tap the icons to edit or delete individual entries."
+                : "View all transaction entries for this category."}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="py-4">
+            {renderEntryTable()}
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="ghost"
+              onClick={() => setViewDialogOpen(false)}
+              className="text-slate-400"
+            >
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Edit Dialog */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>

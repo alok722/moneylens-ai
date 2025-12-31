@@ -221,6 +221,14 @@ export function ExpenseSection({
         onClearFilters={clearFilters}
       />
 
+      {/* Hint for users */}
+      {processedData.length > 0 && (
+        <div className="text-xs text-slate-500 flex items-center gap-1">
+          <span className="hidden md:inline">💡 Tip: Hover over breakdown to view and edit entries</span>
+          <span className="md:hidden">💡 Tip: Tap breakdown to view and edit entries</span>
+        </div>
+      )}
+
       {/* Tag Filters */}
       <TagFilter
         tagFilter={tagFilter as Set<"need" | "want" | "neutral">}
@@ -257,7 +265,11 @@ export function ExpenseSection({
                 />
               </TableHead>
               <TableHead className="text-slate-300 font-semibold">
-                Breakdown
+                <div className="flex items-center gap-1">
+                  <span>Breakdown</span>
+                  <span className="hidden md:inline text-xs text-slate-500 font-normal">(hover to view)</span>
+                  <span className="md:hidden text-xs text-slate-500 font-normal">(tap to view)</span>
+                </div>
               </TableHead>
               <TableHead className="text-slate-300 text-right w-20 font-semibold">
                 Actions
@@ -331,8 +343,9 @@ export function ExpenseSection({
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-8 w-8 text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200 opacity-0 group-hover:opacity-100"
+                      className="h-8 w-8 text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200 opacity-50 group-hover:opacity-100 md:opacity-0 md:group-hover:opacity-100"
                       onClick={() => setDeleteDialog({ open: true, expense })}
+                      title="Delete category"
                     >
                       <Trash2 className="w-4 h-4" />
                     </Button>
