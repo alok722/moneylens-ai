@@ -545,6 +545,14 @@ export class MonthDataService {
    * Delete entire month
    */
   async deleteMonth(monthId: string, userId: string) {
+    // Check if user is admin
+    const { User } = await import("../models");
+    const user = await User.findById(userId);
+    
+    if (user && user.username.toLowerCase() === "admin") {
+      throw new Error("ADMIN_DELETION_BLOCKED");
+    }
+
     const month = await MonthData.findOne({ _id: monthId, userId });
     if (!month) {
       throw new Error("MONTH_NOT_FOUND");

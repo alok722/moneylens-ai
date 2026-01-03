@@ -11,7 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Loader2, ArrowLeft, AlertTriangle, CheckCircle2, ShieldAlert } from "lucide-react";
-import { getSecurityQuestion, resetPasswordWithSecurity } from "@/services/api";
+import { getSecurityQuestion, verifySecurityAnswer, resetPasswordWithSecurity } from "@/services/api";
 import { toast } from "sonner";
 
 type Step = 1 | 2 | 3;
@@ -69,7 +69,30 @@ export function ForgotPassword() {
       return;
     }
 
-    setStep(3);
+    setIsLoading(true);
+
+    try {
+      // Verify the security answer before proceeding to step 3
+      await verifySecurityAnswer(username, securityAnswer);
+      setStep(3);
+    } catch (err: any) {
+      const newAttempts = attempts + 1;
+      setAttempts(newAttempts);
+
+      if (err.response?.status === 401) {
+        const remaining = MAX_ATTEMPTS - newAttempts;
+        if (remaining > 0) {
+          setError(`Incorrect security answer. ${remaining} attempt(s) remaining.`);
+        } else {
+          setError("Maximum attempts exceeded. Account locked for 15 minutes.");
+          toast.error("Too many failed attempts. Please try again later.");
+        }
+      } else {
+        setError(err.response?.data?.error || "Failed to verify security answer");
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleStep3Submit = async (e: React.FormEvent) => {
@@ -93,23 +116,7 @@ export function ForgotPassword() {
       toast.success("Password reset successfully! Please login with your new password.");
       navigate("/login");
     } catch (err: any) {
-      const newAttempts = attempts + 1;
-      setAttempts(newAttempts);
-
-      if (err.response?.status === 401) {
-        const remaining = MAX_ATTEMPTS - newAttempts;
-        if (remaining > 0) {
-          setError(`Incorrect security answer. ${remaining} attempt(s) remaining.`);
-          setStep(2);
-          setNewPassword("");
-          setConfirmPassword("");
-        } else {
-          setError("Maximum attempts exceeded. Account locked for 15 minutes.");
-          toast.error("Too many failed attempts. Please try again later.");
-        }
-      } else {
-        setError(err.response?.data?.error || "Failed to reset password");
-      }
+      setError(err.response?.data?.error || "Failed to reset password");
     } finally {
       setIsLoading(false);
     }
@@ -254,7 +261,14 @@ export function ForgotPassword() {
                   className="flex-1 bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 text-white font-semibold"
                   disabled={isLoading || attempts >= MAX_ATTEMPTS}
                 >
-                  Continue
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Verifying...
+                    </>
+                  ) : (
+                    "Continue"
+                  )}
                 </Button>
               </div>
             </form>

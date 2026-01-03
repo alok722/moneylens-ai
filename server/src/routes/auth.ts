@@ -53,6 +53,11 @@ interface ResetPasswordSecurityRequest {
   newPassword: string;
 }
 
+interface VerifySecurityAnswerRequest {
+  username: string;
+  securityAnswer: string;
+}
+
 router.post(
   "/login",
   async (req: Request<object, object, LoginRequest>, res: Response) => {
@@ -298,6 +303,39 @@ router.post(
         res.status(404).json({ error: "User not found" });
       } else {
         logger.error("Password reset error:", error);
+        res.status(500).json({ error: "Internal server error" });
+      }
+    }
+  }
+);
+
+router.post(
+  "/verify-security-answer",
+  async (req: Request<object, object, VerifySecurityAnswerRequest>, res: Response) => {
+    const { username, securityAnswer } = req.body;
+
+    if (!username || !securityAnswer) {
+      res.status(400).json({ error: "Username and security answer are required" });
+      return;
+    }
+
+    try {
+      const result = await authService.verifySecurityAnswerForReset(
+        username,
+        securityAnswer
+      );
+      res.json(result);
+    } catch (error: any) {
+      if (error.message === "ADMIN_PASSWORD_RESET_BLOCKED") {
+        res.status(403).json({ error: "Password reset is not available for the admin account" });
+      } else if (error.message === "INVALID_SECURITY_ANSWER") {
+        res.status(401).json({ error: "Invalid security answer" });
+      } else if (error.message === "USER_NOT_FOUND") {
+        res.status(404).json({ error: "User not found" });
+      } else if (error.message === "NO_SECURITY_QUESTION") {
+        res.status(400).json({ error: "No security question found for this user" });
+      } else {
+        logger.error("Verify security answer error:", error);
         res.status(500).json({ error: "Internal server error" });
       }
     }

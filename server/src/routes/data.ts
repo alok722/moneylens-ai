@@ -332,6 +332,8 @@ router.delete("/month/:monthId", async (req: Request, res: Response) => {
   } catch (error: any) {
     if (error.message === "MONTH_NOT_FOUND") {
       res.status(404).json({ error: "Month not found" });
+    } else if (error.message === "ADMIN_DELETION_BLOCKED") {
+      res.status(403).json({ error: "Deletion of period is disabled for the admin account to prevent accidental removal of the demo account." });
     } else {
       logger.error("Error deleting month:", error);
       res.status(500).json({ error: "Failed to delete month" });

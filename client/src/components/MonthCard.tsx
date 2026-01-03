@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { TrendingUp, TrendingDown, Wallet, Trash2, ChevronRight, Sparkles } from 'lucide-react';
 import { useSwipe } from '@/hooks/useSwipe';
 import { toast } from 'sonner';
@@ -17,15 +18,20 @@ interface MonthCardProps {
 
 export function MonthCard({ month }: MonthCardProps) {
   const navigate = useNavigate();
-  const { currency, deleteMonth } = useApp();
+  const { currency, deleteMonth, user } = useApp();
   const isPositive = month.carryForward >= 0;
+  const isAdmin = user?.username.toLowerCase() === 'admin';
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
   const { handlers, swipeState } = useSwipe({
     onSwipeLeft: () => {
-      setDeleteDialogOpen(true);
+      if (!isAdmin) {
+        setDeleteDialogOpen(true);
+      } else {
+        toast.error("Deletion of period is disabled for the admin account to prevent accidental removal of the demo account.");
+      }
     },
     threshold: 80,
   });
@@ -57,20 +63,22 @@ export function MonthCard({ month }: MonthCardProps) {
 
   return (
     <>
-      <div className="relative overflow-hidden rounded-xl" {...handlers}>
-        <div
-          className="absolute inset-0 bg-gradient-to-r from-red-600 to-red-500 flex items-center justify-end px-6 pointer-events-none z-0"
-          style={{
-            opacity: Math.min(Math.abs(swipeState.swipeProgress) / 80, 1),
-          }}
-        >
-          <Trash2 className="w-6 h-6 text-white" />
-        </div>
+      <div className="relative overflow-hidden rounded-xl" {...(!isAdmin ? handlers : {})}>
+        {!isAdmin && (
+          <div
+            className="absolute inset-0 bg-gradient-to-r from-red-600 to-red-500 flex items-center justify-end px-6 pointer-events-none z-0"
+            style={{
+              opacity: Math.min(Math.abs(swipeState.swipeProgress) / 80, 1),
+            }}
+          >
+            <Trash2 className="w-6 h-6 text-white" />
+          </div>
+        )}
 
         <Card
           className="group relative overflow-hidden bg-slate-800/90 backdrop-blur-sm border-slate-700/50 hover:border-slate-600 hover:bg-slate-800 hover:shadow-lg transition-all duration-200 cursor-pointer"
           style={{
-            transform: `translateX(${swipeState.swipeProgress}px)`,
+            transform: !isAdmin ? `translateX(${swipeState.swipeProgress}px)` : 'translateX(0)',
             transition: swipeState.isSwiping ? 'none' : 'transform 0.3s ease-out',
           }}
           onClick={handleCardClick}
@@ -92,18 +100,34 @@ export function MonthCard({ month }: MonthCardProps) {
                   <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
                 </div>
                 
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7 text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200 opacity-0 group-hover:opacity-100 hidden md:flex"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setDeleteDialogOpen(true);
-                  }}
-                  title="Delete month"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </Button>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="hidden md:flex">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200 opacity-0 group-hover:opacity-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (!isAdmin) {
+                              setDeleteDialogOpen(true);
+                            }
+                          }}
+                          disabled={isAdmin}
+                          title={isAdmin ? undefined : "Delete month"}
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </Button>
+                      </span>
+                    </TooltipTrigger>
+                    {isAdmin && (
+                      <TooltipContent side="left" className="max-w-xs z-[100]">
+                        <p>Deletion of period is disabled for the admin account to prevent accidental removal of the demo account.</p>
+                      </TooltipContent>
+                    )}
+                  </Tooltip>
+                </TooltipProvider>
               </div>
             </div>
           </CardHeader>

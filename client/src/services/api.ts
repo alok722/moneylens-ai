@@ -111,6 +111,17 @@ export async function getSecurityQuestion(
   return response.data;
 }
 
+export async function verifySecurityAnswer(
+  username: string,
+  securityAnswer: string
+): Promise<{ verified: boolean }> {
+  const response = await api.post<{ verified: boolean }>("/auth/verify-security-answer", {
+    username,
+    securityAnswer,
+  });
+  return response.data;
+}
+
 export async function resetPasswordWithSecurity(
   username: string,
   securityAnswer: string,

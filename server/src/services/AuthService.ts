@@ -353,6 +353,42 @@ export class AuthService {
   }
 
   /**
+   * Verify security answer for password reset (public method)
+   */
+  async verifySecurityAnswerForReset(
+    username: string,
+    securityAnswer: string
+  ): Promise<{ verified: boolean }> {
+    // Check if admin
+    if (username.toLowerCase() === "admin") {
+      throw new Error("ADMIN_PASSWORD_RESET_BLOCKED");
+    }
+
+    // Find user
+    const user = await User.findOne({ username });
+
+    if (!user) {
+      throw new Error("USER_NOT_FOUND");
+    }
+
+    if (!user.securityAnswerHash) {
+      throw new Error("NO_SECURITY_QUESTION");
+    }
+
+    // Verify the answer
+    const isValid = await this.verifySecurityAnswer(username, securityAnswer);
+
+    if (!isValid) {
+      logger.warn(`Failed security answer verification for user: ${username}`);
+      throw new Error("INVALID_SECURITY_ANSWER");
+    }
+
+    logger.info(`Security answer verified for user: ${username}`);
+
+    return { verified: true };
+  }
+
+  /**
    * Reset password using security question
    */
   async resetPasswordWithSecurity(
