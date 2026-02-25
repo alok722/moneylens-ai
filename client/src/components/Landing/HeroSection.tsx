@@ -7,6 +7,7 @@ import {
   ArrowRight,
   LayoutDashboard,
   Brain,
+  Star,
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -116,16 +117,27 @@ export function HeroSection({ user }: HeroSectionProps) {
           )}
         </motion.div>
 
-        <motion.p 
-          className="text-sm text-slate-500"
+        <motion.div
+          className="flex flex-col items-center gap-3"
           initial={fadeInUp.initial}
           animate={fadeInUp.animate}
           transition={fadeInUp.transition}
         >
-          {user
-            ? `Welcome back, ${user.name || user.username}!`
-            : "Free forever. No credit card required."}
-        </motion.p>
+          <p className="text-sm text-slate-500">
+            {user
+              ? `Welcome back, ${user.name || user.username}!`
+              : "Free forever. No credit card required."}
+          </p>
+          <a
+            href="https://github.com/alok722/moneylens-ai"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-yellow-400 transition-colors group"
+          >
+            <Star className="w-4 h-4 group-hover:fill-yellow-400 transition-all" />
+            Star us on GitHub — it helps a lot!
+          </a>
+        </motion.div>
       </div>
 
       {/* Dashboard Preview */}

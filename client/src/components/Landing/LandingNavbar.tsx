@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard } from "lucide-react";
+import { LayoutDashboard, Star } from "lucide-react";
 import { motion } from "framer-motion";
 import { Logo } from "@/components/shared/Logo";
 
@@ -26,7 +26,18 @@ export function LandingNavbar({ user }: LandingNavbarProps) {
           >
             <Logo size="md" />
           </motion.div>
-          <div className="flex gap-3">
+          <div className="flex items-center gap-3">
+            <motion.a
+              href="https://github.com/alok722/moneylens-ai"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm text-slate-300 hover:text-yellow-400 hover:bg-slate-800/60 border border-slate-700/50 hover:border-yellow-500/30 transition-all"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <Star className="w-4 h-4" />
+              <span className="hidden sm:inline">Star on GitHub</span>
+            </motion.a>
             {user ? (
               <motion.div
                 whileHover={{ scale: 1.05 }}

@@ -1,3 +1,4 @@
+import { Star } from "lucide-react";
 import { Logo } from "@/components/shared/Logo";
 
 export function LandingFooter() {
@@ -6,7 +7,16 @@ export function LandingFooter() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
           <Logo size="sm" />
-          <div className="flex flex-col items-center md:items-end gap-2">
+          <div className="flex flex-col items-center md:items-end gap-3">
+            <a
+              href="https://github.com/alok722/moneylens-ai"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-sm text-slate-400 hover:text-yellow-400 transition-colors group"
+            >
+              <Star className="w-3.5 h-3.5 group-hover:fill-yellow-400 transition-all" />
+              Star on GitHub
+            </a>
             <p className="text-slate-500 text-sm">
               © 2025 MoneyLens.ai. All rights reserved.
             </p>
