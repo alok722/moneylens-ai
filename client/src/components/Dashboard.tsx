@@ -1,7 +1,7 @@
 import { useApp } from "@/context/AppContext";
 import { DashboardSkeleton } from "./Skeletons/DashboardSkeleton";
 import { OverviewInsightsCard } from "./AIInsights/OverviewInsightsCard";
-import { DashboardSummaryCards } from "./Dashboard/DashboardSummaryCards";
+
 import { MonthCreationDialog } from "./Dashboard/MonthCreationDialog";
 import { YearSection } from "./Dashboard/YearSection";
 import { Card, CardContent } from "@/components/ui/card";
@@ -36,7 +36,7 @@ export function Dashboard() {
     (sum, m) => sum + m.totalExpense,
     0
   );
-  const netBalance = totalIncome - totalExpense;
+
 
   const advancedMetrics = useMemo(() => {
     if (months.length === 0) return null;
@@ -144,15 +144,7 @@ export function Dashboard() {
         </div>
       </div>
 
-      <DashboardSummaryCards
-        totalRecords={months.length}
-        totalIncome={totalIncome}
-        totalExpense={totalExpense}
-        netBalance={netBalance}
-        currency={currency}
-        avgIncome={advancedMetrics?.avgIncome || 0}
-        avgExpense={advancedMetrics?.avgExpense || 0}
-      />
+
 
       {user && months.length > 0 && (
         <div className="animate-fade-in">
