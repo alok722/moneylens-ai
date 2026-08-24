@@ -99,8 +99,8 @@ export function YearSection({
             {/* Month Cards Grid - Wrapped container */}
             <div className="p-3 sm:p-4 sm:pt-4">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-                {months
-                  .sort((a, b) => a.month - b.month)
+                {[...months]
+                  .sort((a, b) => b.month - a.month)
                   .map((month, idx) => (
                     <div 
                       key={month._id}
