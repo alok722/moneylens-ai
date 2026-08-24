@@ -56,7 +56,7 @@ export function YearSection({
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 flex-wrap">
               <div className="flex flex-wrap gap-2 flex-1 sm:flex-initial">
                 <div className="px-2.5 sm:px-3 py-1.5 bg-emerald-500/10 rounded-lg border border-emerald-500/20 text-xs whitespace-nowrap">
-                  <span className="text-slate-400">Income: </span>
+                  <span className="text-slate-400">Total Money: </span>
                   <span className="text-emerald-400 font-semibold">{yearTotal.income.toLocaleString()}</span>
                 </div>
                 <div className="px-2.5 sm:px-3 py-1.5 bg-red-500/10 rounded-lg border border-red-500/20 text-xs whitespace-nowrap">

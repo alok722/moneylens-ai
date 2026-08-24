@@ -26,7 +26,12 @@ export function Dashboard() {
     .map(Number)
     .sort((a, b) => b - a);
 
-  const totalIncome = (months || []).reduce((sum, m) => sum + m.totalIncome, 0);
+  const totalIncome = (months || []).reduce((sum, m) => {
+    const pureIncome = (m.income || [])
+      .filter((inc) => inc.category !== "Carry Forward")
+      .reduce((incSum, inc) => incSum + inc.amount, 0);
+    return sum + pureIncome;
+  }, 0);
   const totalExpense = (months || []).reduce(
     (sum, m) => sum + m.totalExpense,
     0
@@ -49,11 +54,15 @@ export function Dashboard() {
     const recentMonths = sortedMonths.slice(-3);
     const previousMonths = sortedMonths.slice(-6, -3);
     
+    const getPureIncome = (m: any) => (m.income || [])
+      .filter((inc: any) => inc.category !== "Carry Forward")
+      .reduce((incSum: any, inc: any) => incSum + inc.amount, 0);
+
     const recentAvgIncome = recentMonths.length > 0
-      ? recentMonths.reduce((sum, m) => sum + m.totalIncome, 0) / recentMonths.length
+      ? recentMonths.reduce((sum, m) => sum + getPureIncome(m), 0) / recentMonths.length
       : 0;
     const previousAvgIncome = previousMonths.length > 0
-      ? previousMonths.reduce((sum, m) => sum + m.totalIncome, 0) / previousMonths.length
+      ? previousMonths.reduce((sum, m) => sum + getPureIncome(m), 0) / previousMonths.length
       : 0;
     
     const incomeGrowth = previousAvgIncome > 0
