@@ -269,7 +269,7 @@ export async function exportMonthToExcel(
   });
 
   // Download file
-  const monthAbbr = MONTH_ABBR[monthData.month];
+  const monthAbbr = monthData.monthName.slice(0, 3);
   const filename = `${monthAbbr}_${monthData.year}.xlsx`;
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
